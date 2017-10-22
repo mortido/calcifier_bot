@@ -12,7 +12,7 @@ def gather_forum_updates(bot, job):
 def notify_about_forum_updates(bot, job):
     subs = job.context['notifier'].get_subscriptions_by_type('forum_updates')
     new_posts = job.context['forum'].get_updates()
-    if new_posts:
+    if new_posts and subs:
         message = formatter.format_forum_updates(new_posts)
         for sub in subs:
             try:
@@ -21,4 +21,4 @@ def notify_about_forum_updates(bot, job):
                 print(e)
                 pass
 
-    job.context['forum'].reset_changes()
+        job.context['forum'].reset_changes()
