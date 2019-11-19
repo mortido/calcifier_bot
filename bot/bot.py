@@ -92,10 +92,6 @@ def main():
     #                             'forum': chart,
     #                         })
 
-    updater.start_polling()
-    updater.idle()
-
-
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN)
