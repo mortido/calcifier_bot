@@ -56,8 +56,8 @@ def main():
         print("Can't open configuration file")
         return
 
-    chart = Forum(config['forum_rss_url'], config['forum_date_file_name'])
-    notifier = Notifier(config['subscriptions_file_name'])
+    # chart = Forum(config['forum_rss_url'], config['forum_date_file_name'])
+    # notifier = Notifier(config['subscriptions_file_name'])
 
     # updater = Updater(config['auth_token'])
     TOKEN = os.getenv("TG_TOKEN", "")
@@ -76,7 +76,7 @@ def main():
     dp.add_handler(CommandHandler("subscribe", subscribe_handler))
     dp.add_handler(CommandHandler("unsubscribe", unsubscribe_handler))
 
-    # job_queue = updater.job_queue
+    job_queue = updater.job_queue
     # job_queue.run_repeating(jobs.gather_forum_updates,
     #                         config['update_rate'],
     #                         first=0.0,
