@@ -6,6 +6,7 @@ import jobs
 import storage
 from forum import Forum
 from notifier import Notifier
+import os
 
 # TODO: log errors to telegram
 # Enable logging
@@ -57,7 +58,13 @@ def main():
 
     chart = Forum(config['forum_rss_url'], config['forum_date_file_name'])
     notifier = Notifier(config['subscriptions_file_name'])
-    updater = Updater(config['auth_token'])
+
+    # updater = Updater(config['auth_token'])
+    TOKEN = os.getenv("TG_TOKEN", "")
+    if not TOKEN:
+        logger.error("No telegram token is specified")
+        return
+    updater = Updater(TOKEN)
 
     dp = updater.dispatcher
     dp.add_error_handler(error_handler)
@@ -81,6 +88,13 @@ def main():
                             })
 
     updater.start_polling()
+    updater.idle()
+
+    PORT = int(os.environ.get('PORT', '8443'))
+    updater.start_webhook(listen="0.0.0.0",
+                          port=PORT,
+                          url_path=TOKEN)
+    updater.bot.set_webhook("https://<appname>.herokuapp.com/" + TOKEN)
     updater.idle()
 
 

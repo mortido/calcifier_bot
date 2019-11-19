@@ -1,7 +1,6 @@
 {
   "auth_token": "AUTH_TOKEN",
   "forum_rss_url": "http://russianaicup.ru/forum/index.php?action=.xml;type=rss",
-  "error_log_chat_id": "_",
   "warm_start": false,
   "update_rate": 120,
   "notify_rate": 3600,

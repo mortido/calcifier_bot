@@ -1,2 +1,2 @@
-requests==2.18.4
-python_telegram_bot==6.0.3
+requests>=2.22.0
+python_telegram_bot==12.2.0
