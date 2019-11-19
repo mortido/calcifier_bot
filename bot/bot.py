@@ -51,7 +51,7 @@ def unsubscribe_handler(bot, update):
 def main():
     global notifier, chart
 
-    config = storage.load_from_file('config.json')
+    config = storage.load_from_file('bot/config.json')
     if config is None:
         print("Can't open configuration file")
         return
