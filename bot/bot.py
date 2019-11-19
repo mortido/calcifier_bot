@@ -61,8 +61,13 @@ def main():
 
     # updater = Updater(config['auth_token'])
     TOKEN = os.getenv("TG_TOKEN", "")
+    PORT = int(os.environ.get('PORT', '8443'))
+    HOST = os.getenv("HOST", "")
     if not TOKEN:
         logger.error("No telegram token is specified")
+        return
+    if not HOST:
+        logger.error("No host is specified")
         return
     updater = Updater(TOKEN)
 
@@ -90,11 +95,11 @@ def main():
     updater.start_polling()
     updater.idle()
 
-    PORT = int(os.environ.get('PORT', '8443'))
+
     updater.start_webhook(listen="0.0.0.0",
                           port=PORT,
                           url_path=TOKEN)
-    updater.bot.set_webhook("https://<appname>.herokuapp.com/" + TOKEN)
+    updater.bot.set_webhook(HOST + TOKEN)
     updater.idle()
 
 
