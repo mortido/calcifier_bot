@@ -5,11 +5,11 @@ def format_topic(topic):
         if first_link is None or ts > message['pub_timestamp']:
             ts = message['pub_timestamp']
             first_link = message['link']
-    return '- [{0}]({1}) ({2})'.format(topic['title'], first_link, len(topic['unread_messages']))
+    return f"- [{topic['title']}]({first_link}) ({topic['unread_messages']})"
 
 
 def format_category(category, topics):
-    return '**{0}:**\n'.format(category) + \
+    return f'**{category}:**\n' + \
            '\n'.join(format_topic(topic) for topic in topics if topic['category'] == category)
 
 

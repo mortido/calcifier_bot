@@ -1,2 +1,1 @@
-bot/forum_data.json
-bot/subscriptions.json
+src/local_settings.py

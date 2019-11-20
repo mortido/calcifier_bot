@@ -1,8 +1,6 @@
-# TODO: Threads to prevent waiting on request?... if so locks to notifier/chart is required
-
 from telegram.error import TelegramError
 
-import formatter
+from ai import formatter
 
 
 def gather_forum_updates(bot, job):

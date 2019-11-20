@@ -1,9 +1,0 @@
-{
-  "auth_token": "AUTH_TOKEN",
-  "forum_rss_url": "http://russianaicup.ru/forum/index.php?action=.xml;type=rss",
-  "warm_start": false,
-  "update_rate": 120,
-  "notify_rate": 3600,
-  "forum_date_file_name": "forum_data.json",
-  "subscriptions_file_name": "subscriptions.json"
-}

@@ -3,8 +3,6 @@ import xml.etree.ElementTree as ET
 import re
 from datetime import datetime
 
-import storage
-
 topic_id_regex = re.compile('topic=(\d+)')
 message_id_regex = re.compile('\.msg(\d+)')
 
@@ -17,7 +15,7 @@ class Forum:
         self._forum_rss_url = forum_rss_url
         self.forum_data = storage.load_from_file(self._storage_file_name, {})
 
-        # In case if user data already exist and bot should show updates from last start.
+        # In case if user data already exist and src should show updates from last start.
         self._gather_info()
 
     def check_updates(self):
