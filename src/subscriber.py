@@ -45,7 +45,7 @@ class Subscriber:
                 chat_id = chat_id.decode("utf-8")
                 chat_subs = self._storage.hget(SUBSCRIBES_KEY, chat_id)
                 self._subs_by_chat[chat_id] = pickle.loads(chat_subs)
-                for sub_type, sub_data in self._subs_by_chat.items():
+                for sub_type, sub_data in self._subs_by_chat[chat_id].items():
                     self._subs_by_type[sub_type][chat_id] = sub_data
 
     def add_sub(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
