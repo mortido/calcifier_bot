@@ -30,7 +30,7 @@ def run():
     # Specify custom "singleton" objects
     bot = updater.bot
     if config.redis_url:
-        redis_storage = redis.from_url(config.redis_url, charset="utf-8", decode_responses=True)
+        redis_storage = redis.from_url(config.redis_url)
     else:
         redis_storage = None
     bot.subscriber = Subscriber(redis_storage)

@@ -38,10 +38,10 @@ class Subscriber:
 
         if self._storage:
             known_chats = self._storage.hkeys(SUBSCRIBES_KEY)
-            logger.info(f"Known chats {len(known_chats)} {known_chats}")
+            logger.info(f"Known chats {len(known_chats)}")
             for chat_id in known_chats:
+                chat_id = chat_id.decode("utf-8")
                 chat_subs = self._storage.hget(SUBSCRIBES_KEY, chat_id)
-                logger.info(f"{repr(chat_subs)}")
                 self._subs_by_chat[chat_id] = pickle.loads(chat_subs)
                 for sub_type, sub_data in self._subs_by_chat.items():
                     self._subs_by_type[sub_type][chat_id] = sub_data
