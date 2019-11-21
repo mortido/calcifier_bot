@@ -88,13 +88,13 @@ class Subscriber:
     def get_subs_by_chat(self, chat_id) -> List[Subscription]:
         chat_id = str(chat_id)
         subs = []
-        for stype, data in self._subs_by_chat[chat_id]:
+        for stype, data in self._subs_by_chat[chat_id].items():
             subs.append(Subscription(chat_id, SubscriptionType(stype), copy.deepcopy(data)))
         return subs
 
     def get_subs_by_type(self, stype: SubscriptionType) -> List[Subscription]:
         subs = []
-        for chat_id, data in self._subs_by_type[stype.value]:
+        for chat_id, data in self._subs_by_type[stype.value].items():
             subs.append(Subscription(chat_id, stype, copy.deepcopy(data)))
         return subs
 
