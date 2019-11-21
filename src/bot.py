@@ -29,7 +29,10 @@ def run():
 
     # Specify custom "singleton" objects
     bot = updater.bot
-    redis_storage = redis.from_url(config.redis_url) if config.redis_url else None
+    if config.redis_url:
+        redis_storage = redis.from_url(config.redis_url, charset="utf-8", decode_responses=True)
+    else:
+        redis_storage = None
     bot.subscriber = Subscriber(redis_storage)
 
     dp = updater.dispatcher
