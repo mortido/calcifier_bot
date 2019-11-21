@@ -60,7 +60,7 @@ class Forum:
                 self._min_timestamp = 0.0
             else:
                 self._min_timestamp = 0.0
-                self._min_timestamp = pickle.loads(self._min_timestamp)
+                # self._min_timestamp = pickle.loads(self._min_timestamp)
         logging.info(f"AI Forum created, min_timestamp {self._min_timestamp}")
         self.forum_data = dict()
 
