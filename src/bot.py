@@ -10,6 +10,8 @@ import redis
 
 from settings import config
 from ai import handlers as ai_handlers
+from ai import jobs as ai_jobs
+from ai.forum import Forum as AIForum
 from subscriber import Subscriber
 import common
 
@@ -42,21 +44,17 @@ def run():
     dp.add_handler(ai_handlers.subscribe_forum)
     dp.add_handler(ai_handlers.unsubscribe_forum)
 
-    # job_queue = updater.job_queue
-    # job_queue.run_repeating(jobs.gather_forum_updates,
-    #                         config['update_rate'],
-    #                         first=0.0,
-    #                         context={
-    #                             'forum': chart
-    #                         })
-    #
-    # job_queue.run_repeating(jobs.notify_about_forum_updates,
-    #                         config['notify_rate'],
-    #                         first=0.0,
-    #                         context={
-    #                             'notifier': notifier,
-    #                             'forum': chart,
-    #                         })
+    bot.ai_forum = AIForum(config.forum_rss_url, redis_storage)
+    job_queue = updater.job_queue
+    job_queue.run_repeating(ai_jobs.gather_forum_updates,
+                            config.forum_refresh_delay,
+                            first=0.0,
+                            context=bot.ai_forum)
+
+    job_queue.run_repeating(ai_jobs.notify_about_forum_updates,
+                            config.forum_notify_delay,
+                            first=0.0,
+                            context=bot.ai_forum)
 
     if config.host:
         logger.info("Host specified - starting webhook...")

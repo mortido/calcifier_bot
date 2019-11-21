@@ -2,37 +2,85 @@ import requests
 import xml.etree.ElementTree as ET
 import re
 from datetime import datetime
+from threading import Lock
+import copy
 
 topic_id_regex = re.compile('topic=(\d+)')
 message_id_regex = re.compile('\.msg(\d+)')
 
 datetime_format = '%a, %d %b %Y %H:%M:%S %Z'
 
+MIN_TIMESTAMP_KEY = ""
+
+
+class ForumMessage:
+    def __init__(self, message_id, link, pub_timestamp, description):
+        self.message_id = message_id
+        self.link = link
+        self.pub_timestamp = pub_timestamp
+        self.description = description
+
+
+class ForumTopic:
+    def __init__(self, topic_id, category, title):
+        self.id = topic_id
+        self.category = category
+        self.title = title
+        self.messages = dict()
+
+    @property
+    def earliest_message_link(self):
+        ts = None
+        link = None
+        for message in self.messages:
+            if ts is None or ts > message.pub_timestamp:
+                link = message.link
+        return link
+
+    @property
+    def last_update_timestamp(self):
+        ts = 0
+        for message in self.messages.values():
+            ts = max(ts, message.pub_timestamp)
+        return ts
+
 
 class Forum:
-    def __init__(self, forum_rss_url, storage_file_name):
-        self._storage_file_name = storage_file_name
+    def __init__(self, forum_rss_url, redis_storage):
+        self._lock = Lock()
+        self._storage = redis_storage
         self._forum_rss_url = forum_rss_url
-        self.forum_data = storage.load_from_file(self._storage_file_name, {})
+        self._min_timestamp = 0.0
+        if self._storage:
+            self._min_timestamp = self._storage.get(MIN_TIMESTAMP_KEY)
+            if self._min_timestamp is None:
+                self._min_timestamp = 0.0
 
-        # In case if user data already exist and src should show updates from last start.
-        self._gather_info()
+        self.forum_data = dict()
 
-    def check_updates(self):
-        self._gather_info()
+    def get_fresh_topics(self):
+        with self._lock:
+            result = (copy.deepcopy(t) for t in self.forum_data.values())
+            result = sorted(result,
+                            key=lambda x: x.last_update_timestamp,
+                            reverse=True)
+            return result
 
-    def reset_changes(self):
-        # TODO: resets status of 'notified previously' for all subscribers at once.
-        for topic in self.forum_data.values():
-            topic['unread_messages'].clear()
-            topic['last_notify_timestamp'] = topic['last_message_timestamp']
-        storage.save_to_file(self._storage_file_name, self.forum_data)
+    def reset_to_timestamp(self, timestamp):
+        with self._lock:
+            old_forum_data = self.forum_data.values()
+            self.forum_data = dict()
 
-    def get_updates(self, max_count=10):
-        return sorted((v for v in self.forum_data.values() if v['unread_messages']),
-                      key=lambda x: x['last_message_timestamp'], reverse=True)[:max_count]
+            for topic in old_forum_data:
+                topic.message_timestamps = set(
+                    ts for ts in topic.message_timestamps if ts > timestamp)
+                if topic.message_timestamps:
+                    self.forum_data[topic.id] = topic
+            self._min_timestamp = timestamp
+            if self._storage:
+                self._storage.set(MIN_TIMESTAMP_KEY, self._min_timestamp)
 
-    def _gather_info(self):
+    def gather_updates(self):
         page = requests.get(self._forum_rss_url)
         root = ET.fromstring(page.text)
 
@@ -57,29 +105,18 @@ class Forum:
                 elif field.tag == 'description':
                     description = field.text
 
+            if pub_timestamp <= self._min_timestamp:
+                continue
+
             topic_id = topic_id_regex.search(link).group(1)
             message_id = message_id_regex.search(link).group(1)
             if topic_id not in self.forum_data:
-                topic = {'last_notify_timestamp': 0,  # time stamp of last sent message
-                         'last_message_timestamp': 0,  # time stamp of last message
-                         'unread_messages': {}}
+                topic = ForumTopic(topic_id, category, title)
+                self.forum_data[topic_id] = topic
             else:
                 topic = self.forum_data[topic_id]
-
-            if pub_timestamp <= topic['last_notify_timestamp']:
-                continue
-
-            # update just in case of update.
-            topic['category'] = category
-            topic['title'] = title
-            topic['last_message_timestamp'] = max(topic['last_message_timestamp'], pub_timestamp)
-
-            message = {'description': description,
-                       'link': link,
-                       'pub_timestamp': pub_timestamp}
-
-            topic['unread_messages'][message_id] = message
-
-            self.forum_data[topic_id] = topic
-
-        storage.save_to_file(self._storage_file_name, self.forum_data)
+                topic.category = category
+                topic.title = title
+            if message_id not in topic.messages:
+                topic.messages[message_id] = ForumMessage(message_id, link, pub_timestamp,
+                                                          description)

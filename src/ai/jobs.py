@@ -1,22 +1,29 @@
 from telegram.error import TelegramError
+from telegram.ext import CallbackContext
+from telegram import ParseMode
 
+from subscriber import SubscriptionType
 from ai import formatter
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def gather_forum_updates(bot, job):
-    job.context['forum'].check_updates()
+def gather_forum_updates(context: CallbackContext):
+    forum = context.job.context
+    forum.gather_updates()
 
 
-def notify_about_forum_updates(bot, job):
-    subs = job.context['notifier'].get_subscriptions_by_type('forum_updates')
-    new_posts = job.context['forum'].get_updates()
-    if new_posts and subs:
-        message = formatter.format_forum_updates(new_posts)
+def notify_about_forum_updates(context: CallbackContext):
+    forum = context.job.context
+    topics = forum.get_fresh_topics()
+    subs = context.bot.subscriber.get_subs_by_type(SubscriptionType.AI_FORUM)
+    if topics and subs:
+        message = formatter.format_forum_updates(topics)
         for sub in subs:
             try:
-                bot.send_message(chat_id=sub['chat_id'], text=message, parse_mode='Markdown')
+                context.bot.send_message(chat_id=sub.chat_id, text=message,
+                                         parse_mode=ParseMode.MARKDOWN)
             except TelegramError as e:
-                print(e)
-                pass
-
-        job.context['forum'].reset_changes()
+                logger.error(f"Error during sending ai forum update: {e}")
+    forum.reset_to_timestamp(topics[0].last_update_timestamp)
