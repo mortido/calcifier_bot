@@ -72,51 +72,52 @@ class Forum:
             self.forum_data = dict()
 
             for topic in old_forum_data:
-                topic.message_timestamps = set(
-                    ts for ts in topic.message_timestamps if ts > timestamp)
-                if topic.message_timestamps:
+                messages = dict((k, v) for k, v in topic.messages if v.pub_timestamp > timestamp)
+                if messages:
+                    topic.messages = messages
                     self.forum_data[topic.id] = topic
             self._min_timestamp = timestamp
             if self._storage:
                 self._storage.set(MIN_TIMESTAMP_KEY, self._min_timestamp)
 
     def gather_updates(self):
-        page = requests.get(self._forum_rss_url)
-        root = ET.fromstring(page.text)
+        with self._lock:
+            page = requests.get(self._forum_rss_url)
+            root = ET.fromstring(page.text)
 
-        for item in root.iter('item'):
-            title = None
-            link = None
-            pub_timestamp = None
-            category = None
-            description = None
+            for item in root.iter('item'):
+                title = None
+                link = None
+                pub_timestamp = None
+                category = None
+                description = None
 
-            for field in item:
-                if field.tag == 'pubDate':
-                    pub_timestamp = datetime.strptime(field.text, datetime_format).timestamp()
-                elif field.tag == 'title':
-                    title = field.text
-                    if title.startswith('Re: '):
-                        title = title[4:]
-                elif field.tag == 'link':
-                    link = field.text
-                elif field.tag == 'category':
-                    category = field.text
-                elif field.tag == 'description':
-                    description = field.text
+                for field in item:
+                    if field.tag == 'pubDate':
+                        pub_timestamp = datetime.strptime(field.text, datetime_format).timestamp()
+                    elif field.tag == 'title':
+                        title = field.text
+                        if title.startswith('Re: '):
+                            title = title[4:]
+                    elif field.tag == 'link':
+                        link = field.text
+                    elif field.tag == 'category':
+                        category = field.text
+                    elif field.tag == 'description':
+                        description = field.text
 
-            if pub_timestamp <= self._min_timestamp:
-                continue
+                if pub_timestamp <= self._min_timestamp:
+                    continue
 
-            topic_id = topic_id_regex.search(link).group(1)
-            message_id = message_id_regex.search(link).group(1)
-            if topic_id not in self.forum_data:
-                topic = ForumTopic(topic_id, category, title)
-                self.forum_data[topic_id] = topic
-            else:
-                topic = self.forum_data[topic_id]
-                topic.category = category
-                topic.title = title
-            if message_id not in topic.messages:
-                topic.messages[message_id] = ForumMessage(message_id, link, pub_timestamp,
-                                                          description)
+                topic_id = topic_id_regex.search(link).group(1)
+                message_id = message_id_regex.search(link).group(1)
+                if topic_id not in self.forum_data:
+                    topic = ForumTopic(topic_id, category, title)
+                    self.forum_data[topic_id] = topic
+                else:
+                    topic = self.forum_data[topic_id]
+                    topic.category = category
+                    topic.title = title
+                if message_id not in topic.messages:
+                    topic.messages[message_id] = ForumMessage(message_id, link, pub_timestamp,
+                                                              description)
