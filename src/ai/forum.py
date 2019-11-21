@@ -72,7 +72,8 @@ class Forum:
             self.forum_data = dict()
 
             for topic in old_forum_data:
-                messages = dict((k, v) for k, v in topic.messages if v.pub_timestamp > timestamp)
+                messages = dict(
+                    (k, v) for k, v in topic.messages.items() if v.pub_timestamp > timestamp)
                 if messages:
                     topic.messages = messages
                     self.forum_data[topic.id] = topic
