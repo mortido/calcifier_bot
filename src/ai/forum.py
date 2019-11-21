@@ -4,10 +4,12 @@ import re
 from datetime import datetime
 from threading import Lock
 import copy
+import logging
+
+logger = logging.getLogger(__name__)
 
 topic_id_regex = re.compile('topic=(\d+)')
 message_id_regex = re.compile('\.msg(\d+)')
-
 datetime_format = '%a, %d %b %Y %H:%M:%S %Z'
 
 MIN_TIMESTAMP_KEY = ""
@@ -55,7 +57,7 @@ class Forum:
             self._min_timestamp = self._storage.get(MIN_TIMESTAMP_KEY)
             if self._min_timestamp is None:
                 self._min_timestamp = 0.0
-
+        logging.info(f"AI Forum created, min_timestamp {self._min_timestamp}")
         self.forum_data = dict()
 
     def get_fresh_topics(self):

@@ -26,4 +26,4 @@ def notify_about_forum_updates(context: CallbackContext):
                                          parse_mode=ParseMode.MARKDOWN)
             except TelegramError as e:
                 logger.error(f"Error during sending ai forum update: {e}")
-    forum.reset_to_timestamp(topics[0].last_update_timestamp)
+        forum.reset_to_timestamp(topics[0].last_update_timestamp)
