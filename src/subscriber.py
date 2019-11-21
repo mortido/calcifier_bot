@@ -52,7 +52,7 @@ class Subscriber:
         self._subs_by_type[stype][chat_id] = data
 
         if self._storage:
-            self._storage.set(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
         return True
 
     def remove_sub(self, chat_id, stype: SubscriptionType):
@@ -64,7 +64,7 @@ class Subscriber:
         del self._subs_by_type[stype][chat_id]
 
         if self._storage:
-            self._storage.set(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
         return True
 
     def update_sub(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
@@ -77,7 +77,7 @@ class Subscriber:
         self._subs_by_type[stype][chat_id] = data
 
         if self._storage:
-            self._storage.set(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
         return True
 
     def get_subs_by_chat(self, chat_id):
