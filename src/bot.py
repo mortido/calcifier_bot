@@ -1,7 +1,7 @@
 import logging
 
 log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=log_format, level=logging.WARNING)
+logging.basicConfig(format=log_format, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from telegram import Update
