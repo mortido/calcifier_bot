@@ -5,6 +5,7 @@ from datetime import datetime
 from threading import Lock
 import copy
 import logging
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,9 @@ class Forum:
             self._min_timestamp = self._storage.get(MIN_TIMESTAMP_KEY)
             if self._min_timestamp is None:
                 self._min_timestamp = 0.0
+            else:
+                self._min_timestamp = 0.0
+                self._min_timestamp = pickle.loads(self._min_timestamp)
         logging.info(f"AI Forum created, min_timestamp {self._min_timestamp}")
         self.forum_data = dict()
 
@@ -81,7 +85,7 @@ class Forum:
                     self.forum_data[topic.id] = topic
             self._min_timestamp = timestamp
             if self._storage:
-                self._storage.set(MIN_TIMESTAMP_KEY, self._min_timestamp)
+                self._storage.set(MIN_TIMESTAMP_KEY, pickle.dumps(self._min_timestamp))
 
     def gather_updates(self):
         with self._lock:
