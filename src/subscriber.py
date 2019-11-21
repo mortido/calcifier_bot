@@ -1,12 +1,15 @@
-from typing import Optional
+from typing import Optional, List
 from threading import Lock
 from collections import defaultdict
 from enum import Enum
 import pickle
 import copy
 from redis.client import Redis
+import logging
 
 __all__ = ['SubscriptionType', 'Subscription']
+
+logger = logging.getLogger(__name__)
 
 SUBSCRIBES_KEY = "subscribes"
 
@@ -35,6 +38,7 @@ class Subscriber:
 
         if self._storage:
             known_chats = self._storage.hkeys(SUBSCRIBES_KEY)
+            logger.info(f"Known chats {len(known_chats)}")
             for chat_id in known_chats:
                 chat_subs = self._storage.hget(SUBSCRIBES_KEY, chat_id)
                 self._subs_by_chat[chat_id] = pickle.loads(chat_subs)
@@ -80,20 +84,20 @@ class Subscriber:
             self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
         return True
 
-    def get_subs_by_chat(self, chat_id):
+    def get_subs_by_chat(self, chat_id) -> List[Subscription]:
         chat_id = str(chat_id)
         subs = []
         for stype, data in self._subs_by_chat[chat_id]:
             subs.append(Subscription(chat_id, SubscriptionType(stype), copy.deepcopy(data)))
         return subs
 
-    def get_subs_by_type(self, stype: SubscriptionType):
+    def get_subs_by_type(self, stype: SubscriptionType) -> List[Subscription]:
         subs = []
         for chat_id, data in self._subs_by_type[stype.value]:
             subs.append(Subscription(chat_id, stype, copy.deepcopy(data)))
         return subs
 
-    def get_sub(self, chat_id, stype: SubscriptionType):
+    def get_sub(self, chat_id, stype: SubscriptionType) -> Optional[Subscription]:
         chat_id = str(chat_id)
         sub = None
         if stype.value in self._subs_by_chat[chat_id]:

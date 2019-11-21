@@ -11,9 +11,12 @@ import redis
 from settings import config
 from ai import handlers as ai_handlers
 from subscriber import Subscriber
+import common
+
 
 def error_handler(update: Update, context: CallbackContext):
     logger.warning('Update "%s" caused error "%s"' % (update, context.error))
+
 
 def run():
     if not config.tg_token:
@@ -32,6 +35,7 @@ def run():
     dp = updater.dispatcher
     dp.add_error_handler(error_handler)
     dp.add_handler(ai_handlers.subscribe_forum)
+    dp.add_handler(common.subs_list)
     # dp.add_handler(CommandHandler("unsub_aiforum", ai_handlers.))
     # dp.add_handler(CommandHandler("unsubscribe", unsubscribe_handler))
 
