@@ -20,7 +20,7 @@ class Config:
         self.forum_notify_delay = 1 * 60 * 60
 
     def __str__(self):
-        return f"Config<tg_token:{self.tg_token[3:]}... " + \
+        return f"Config<tg_token:...{self.tg_token[-3:]} " + \
                f"host:{self.host}" + \
                f"port:{self.port}" + \
                ">"

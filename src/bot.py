@@ -37,10 +37,10 @@ def run():
 
     dp = updater.dispatcher
     dp.add_error_handler(error_handler)
-    dp.add_handler(ai_handlers.subscribe_forum)
+    dp.add_handler(common.start)
     dp.add_handler(common.subs_list)
-    # dp.add_handler(CommandHandler("unsub_aiforum", ai_handlers.))
-    # dp.add_handler(CommandHandler("unsubscribe", unsubscribe_handler))
+    dp.add_handler(ai_handlers.subscribe_forum)
+    dp.add_handler(ai_handlers.unsubscribe_forum)
 
     # job_queue = updater.job_queue
     # job_queue.run_repeating(jobs.gather_forum_updates,

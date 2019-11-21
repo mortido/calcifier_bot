@@ -47,61 +47,67 @@ class Subscriber:
                     self._subs_by_type[sub_type][chat_id] = sub_data
 
     def add_sub(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
-        chat_id = str(chat_id)
-        if stype.value in self._subs_by_chat[chat_id]:
-            return False
+        with self._lock:
+            chat_id = str(chat_id)
+            if stype.value in self._subs_by_chat[chat_id]:
+                return False
 
-        stype = stype.value
-        data = copy.deepcopy(data)
-        self._subs_by_chat[chat_id][stype] = data
-        self._subs_by_type[stype][chat_id] = data
+            stype = stype.value
+            data = copy.deepcopy(data)
+            self._subs_by_chat[chat_id][stype] = data
+            self._subs_by_type[stype][chat_id] = data
 
-        if self._storage:
-            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
-        return True
+            if self._storage:
+                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            return True
 
     def remove_sub(self, chat_id, stype: SubscriptionType):
-        chat_id = str(chat_id)
-        if stype.value not in self._subs_by_chat[chat_id]:
-            return False
-        stype = stype.value
-        del self._subs_by_chat[chat_id][stype]
-        del self._subs_by_type[stype][chat_id]
+        with self._lock:
+            chat_id = str(chat_id)
+            if stype.value not in self._subs_by_chat[chat_id]:
+                return False
+            stype = stype.value
+            del self._subs_by_chat[chat_id][stype]
+            del self._subs_by_type[stype][chat_id]
 
-        if self._storage:
-            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
-        return True
+            if self._storage:
+                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            return True
 
     def update_sub(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
-        chat_id = str(chat_id)
-        if stype.value not in self._subs_by_chat[chat_id]:
-            return False
-        stype = stype.value
-        data = copy.deepcopy(data)
-        self._subs_by_chat[chat_id][stype] = data
-        self._subs_by_type[stype][chat_id] = data
+        with self._lock:
+            chat_id = str(chat_id)
+            if stype.value not in self._subs_by_chat[chat_id]:
+                return False
+            stype = stype.value
+            data = copy.deepcopy(data)
+            self._subs_by_chat[chat_id][stype] = data
+            self._subs_by_type[stype][chat_id] = data
 
-        if self._storage:
-            self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
-        return True
+            if self._storage:
+                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+            return True
 
     def get_subs_by_chat(self, chat_id) -> List[Subscription]:
-        chat_id = str(chat_id)
-        subs = []
-        for stype, data in self._subs_by_chat[chat_id].items():
-            subs.append(Subscription(chat_id, SubscriptionType(stype), copy.deepcopy(data)))
-        return subs
+        with self._lock:
+            chat_id = str(chat_id)
+            subs = []
+            for stype, data in self._subs_by_chat[chat_id].items():
+                subs.append(Subscription(chat_id, SubscriptionType(stype), copy.deepcopy(data)))
+            return subs
 
     def get_subs_by_type(self, stype: SubscriptionType) -> List[Subscription]:
-        subs = []
-        for chat_id, data in self._subs_by_type[stype.value].items():
-            subs.append(Subscription(chat_id, stype, copy.deepcopy(data)))
-        return subs
+        with self._lock:
+            subs = []
+            for chat_id, data in self._subs_by_type[stype.value].items():
+                subs.append(Subscription(chat_id, stype, copy.deepcopy(data)))
+            return subs
 
     def get_sub(self, chat_id, stype: SubscriptionType) -> Optional[Subscription]:
-        chat_id = str(chat_id)
-        sub = None
-        if stype.value in self._subs_by_chat[chat_id]:
-            data = copy.deepcopy(self._subs_by_chat[chat_id][stype.value])
-            sub = Subscription(chat_id, stype, data)
-        return sub
+        with self._lock:
+            chat_id = str(chat_id)
+            sub = None
+            if stype.value in self._subs_by_chat[chat_id]:
+                data = copy.deepcopy(self._subs_by_chat[chat_id][stype.value])
+                sub = Subscription(chat_id, stype, data)
+            return sub
