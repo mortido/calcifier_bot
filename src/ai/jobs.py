@@ -18,6 +18,7 @@ def notify_about_forum_updates(context: CallbackContext):
     forum = context.job.context
     topics = forum.get_fresh_topics()
     subs = context.bot.subscriber.get_subs_by_type(SubscriptionType.AI_FORUM)
+    logger.info(f"{subs} {topics}")
     if topics and subs:
         message = formatter.format_forum_updates(topics)
         for sub in subs:

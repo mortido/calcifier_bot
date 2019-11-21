@@ -24,6 +24,8 @@ class Subscription:
         self.chat_id = chat_id
         self.data = data
 
+    def __str__(self):
+        return f"Subscription<{self.type} {self.chat_id} {self.data}>"
 
 class Subscriber:
     """
