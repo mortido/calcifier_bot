@@ -1,3 +1,7 @@
+from typing import List
+from ai.chart import Player
+
+
 def format_topic(topic):
     first_link = None
     ts = 0
@@ -20,3 +24,39 @@ def format_forum_updates(topics):
         result.append(format_category(category, topics))
     return '\n\n'.join(result)
 
+
+def format_top(chart_name, players: List[Player]):
+    rows = ["```"]
+    rows.append(chart_name.upper())
+    rows.append("")
+    rows.append("    PLAYER         LANGUAGE  W.R. SCORE   Δ")
+    rows.append("-------------------------------------------")
+    for i, player in enumerate(players):
+        rows.append("{}{}{}{}{}{}".format(
+            str(i + 1).ljust(4),
+            (player.username if len(player.username) < 15 else player.username[:11] + "...").ljust(15),
+            player.language.ljust(9),
+            player.winrate.rjust(5),
+            player.score.rjust(6),
+            player.delta.rjust(4)
+        ))
+    rows.append("```")
+    return "\n".join(rows)
+
+def format_pos(chart_name, players):
+    rows = ["```"]
+    # rows.append(chart_name.upper())
+    # rows.append("")
+    # rows.append("    PLAYER         LANGUAGE  W.R. SCORE   Δ")
+    # rows.append("-------------------------------------------")
+    for i, player in players:
+        rows.append("{}{}{}{}{}{}".format(
+            str(i + 1).ljust(4),
+            (player.username if len(player.username) < 15 else player.username[:11] + "...").ljust(15),
+            player.language.ljust(9),
+            player.winrate.rjust(5),
+            player.score.rjust(6),
+            player.delta.rjust(4)
+        ))
+    rows.append("```")
+    return "\n".join(rows)

@@ -13,7 +13,7 @@ topic_id_regex = re.compile('topic=(\d+)')
 message_id_regex = re.compile('\.msg(\d+)')
 datetime_format = '%a, %d %b %Y %H:%M:%S %Z'
 
-MIN_TIMESTAMP_KEY = ""
+MIN_TIMESTAMP_KEY = "ai_forum_min_timestamp"
 
 
 class ForumMessage:

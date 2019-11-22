@@ -8,12 +8,15 @@ from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import redis
 
-from settings import config
+from chats_settings import ChatSettingsStorage
+from settings import Config
 from ai import handlers as ai_handlers
 from ai import jobs as ai_jobs
 from ai.forum import Forum as AIForum
+from ai.chart import Chart as AIChart
+from ml import handlers as ml_handlers
 from subscriber import Subscriber
-import common
+import handlers
 
 
 def error_handler(update: Update, context: CallbackContext):
@@ -21,6 +24,7 @@ def error_handler(update: Update, context: CallbackContext):
 
 
 def run():
+    config = Config()
     if not config.tg_token:
         logger.error("Telegram token is not specified")
         return
@@ -33,17 +37,28 @@ def run():
     bot = updater.bot
     if config.redis_url:
         redis_storage = redis.from_url(config.redis_url)
+        redis_storage.delete("")  # TODO: remove
     else:
         redis_storage = None
+    bot.config = config
+    bot.chat_settings = ChatSettingsStorage(redis_storage)
     bot.subscriber = Subscriber(redis_storage)
 
     dp = updater.dispatcher
     dp.add_error_handler(error_handler)
-    dp.add_handler(common.start)
-    dp.add_handler(common.subs_list)
+    dp.add_handler(handlers.start)
+    dp.add_handler(handlers.subs_list)
+    dp.add_handler(handlers.top)
+    dp.add_handler(handlers.pos)
+    dp.add_handler(handlers.configure)
     dp.add_handler(ai_handlers.subscribe_forum)
     dp.add_handler(ai_handlers.unsubscribe_forum)
+    dp.add_handler(ai_handlers.top_n)
+    dp.add_handler(ai_handlers.pos)
+    dp.add_handler(ml_handlers.top_n)
+    dp.add_handler(ml_handlers.pos)
 
+    bot.ai_chart = AIChart(config.ai_chart_url, config.ai_chart_refresh_delay)
     bot.ai_forum = AIForum(config.forum_rss_url, redis_storage)
     job_queue = updater.job_queue
     job_queue.run_repeating(ai_jobs.gather_forum_updates,

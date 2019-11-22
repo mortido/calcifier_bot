@@ -7,7 +7,6 @@ import copy
 from redis.client import Redis
 import logging
 
-__all__ = ['SubscriptionType', 'Subscription']
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,7 @@ class Subscriber:
 
         if self._storage:
             known_chats = self._storage.hkeys(SUBSCRIBES_KEY)
-            logger.info(f"Known chats {len(known_chats)}")
+            logger.info(f"Known chats for subscriber {len(known_chats)}")
             for chat_id in known_chats:
                 chat_id = chat_id.decode("utf-8")
                 chat_subs = self._storage.hget(SUBSCRIBES_KEY, chat_id)
