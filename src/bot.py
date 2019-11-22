@@ -37,7 +37,6 @@ def run():
     bot = updater.bot
     if config.redis_url:
         redis_storage = redis.from_url(config.redis_url)
-        redis_storage.delete("")  # TODO: remove
     else:
         redis_storage = None
     bot.config = config

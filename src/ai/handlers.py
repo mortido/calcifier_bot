@@ -60,6 +60,9 @@ top_n = PrefixHandler(commands.PREFIXES, commands.TOP_AI, top_n_callback)
 
 
 def pos_callback(update: Update, context: CallbackContext):
+    context.bot.send_chat_action(chat_id=update.message.chat_id,
+                                 action=ChatAction.TYPING)
+
     usernames = context.args
     if not usernames:
         update.message.reply_text("Ст🔥ит ук🔥з🔥ть ник")
