@@ -50,4 +50,4 @@ def notify_about_new_games(context: CallbackContext):
                                                  parse_mode=ParseMode.MARKDOWN)
         except BaseException as e:
             logger.error(f"Error during sending ai games: {e}")
-        # chart.reset_to_game(new_games[-1].gid)
+        chart.reset_to_game(new_games[-1].gid)

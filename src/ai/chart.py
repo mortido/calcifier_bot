@@ -181,7 +181,7 @@ class Chart:
             page = requests.get(url)
             tree = html.fromstring(page.content)
             tds = tree.xpath(GAMES_XPATH_GAME)[0].xpath("td")
-            return int(tds[0].text_content().strip())-1
+            return int(tds[0].text_content().strip())
         except BaseException:
             logger.error("Can't get last game id - fallback to 0")
             return 0
