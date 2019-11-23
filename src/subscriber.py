@@ -28,11 +28,11 @@ class Subscription:
 
     def __str__(self):
         if self.type == SubscriptionType.AI_GAMES:
-            return f"{self.type}: {' '.join(self.data)}>"
+            return f"{self.type.value}: {' '.join(self.data)}>"
         if self.type == SubscriptionType.AI_FORUM:
-            return f"{self.type}"
+            return f"{self.type.value}"
 
-        return f"{self.type}: {self.data}>"
+        return f"{self.type.value}: {self.data}>"
 
 
 class Subscriber:
