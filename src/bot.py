@@ -54,6 +54,8 @@ def run():
     dp.add_handler(handlers.configure)
     dp.add_handler(ai_handlers.subscribe_forum)
     dp.add_handler(ai_handlers.unsubscribe_forum)
+    dp.add_handler(ai_handlers.subscribe_games)
+    dp.add_handler(ai_handlers.unsubscribe_games)
     dp.add_handler(ai_handlers.top)
     dp.add_handler(ai_handlers.toop)
     dp.add_handler(ai_handlers.pos)
