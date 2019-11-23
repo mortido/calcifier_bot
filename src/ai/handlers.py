@@ -1,5 +1,6 @@
 from telegram import Update, ChatAction, ParseMode
 from telegram.ext import CallbackContext, PrefixHandler
+from functools import partial
 
 import src.commands as commands
 from src.common import chat_admins_only
@@ -36,7 +37,7 @@ def _unsubscribe_forum(update: Update, context: CallbackContext):
 unsubscribe_forum = PrefixHandler(commands.PREFIXES, commands.UNSUB_AI_FORUM, _unsubscribe_forum)
 
 
-def top_n_callback(update: Update, context: CallbackContext):
+def top_callback(update: Update, context: CallbackContext, short=True):
     context.bot.send_chat_action(chat_id=update.message.chat_id,
                                  action=ChatAction.TYPING)
 
@@ -51,15 +52,19 @@ def top_n_callback(update: Update, context: CallbackContext):
         if n < 1:
             update.message.reply_text("🐴❤️")
             return
-    players = context.bot.ai_chart.get_top_n(n)
-    text = formatter.format_top(context.bot.ai_chart.name, players)
+    players = context.bot.ai_chart.get_top(n)
+    if short:
+        text = formatter.format_top(context.bot.ai_chart.name, players)
+    else:
+        text = formatter.format_toop(context.bot.ai_chart.name, players)
     update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 
-top_n = PrefixHandler(commands.PREFIXES, commands.TOP_AI, top_n_callback)
+top = PrefixHandler(commands.PREFIXES, commands.TOP_AI, partial(top_callback, short=True))
+toop = PrefixHandler(commands.PREFIXES, commands.TOOP_AI, partial(top_callback, short=False))
 
 
-def pos_callback(update: Update, context: CallbackContext):
+def pos_callback(update: Update, context: CallbackContext, short=True):
     context.bot.send_chat_action(chat_id=update.message.chat_id,
                                  action=ChatAction.TYPING)
 
@@ -72,9 +77,12 @@ def pos_callback(update: Update, context: CallbackContext):
         update.message.reply_text("Не н🔥шел т🔥ких уч🔥стник🔥в")
         return
 
-    text = formatter.format_pos(context.bot.ai_chart.name, players)
+    if short:
+        text = formatter.format_pos(context.bot.ai_chart.name, players)
+    else:
+        text = formatter.format_poos(context.bot.ai_chart.name, players)
     update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 
-
-pos = PrefixHandler(commands.PREFIXES, commands.POS_AI, pos_callback)
+pos = PrefixHandler(commands.PREFIXES, commands.POS_AI, partial(pos_callback, short=True))
+poos = PrefixHandler(commands.PREFIXES, commands.POOS_AI, partial(pos_callback, short=False))

@@ -127,7 +127,7 @@ class Chart:
 
         return places, players
 
-    def get_top_n(self, n):
+    def get_top(self, n):
         self._update_top()
         return list(map(copy.deepcopy, self._top_players[:n]))
 

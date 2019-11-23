@@ -1,6 +1,6 @@
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext, PrefixHandler
-from functools import wraps
+from functools import partial
 
 import commands
 from ai import handlers as ai_handlers
@@ -62,28 +62,30 @@ def _start(update: Update, context: CallbackContext):
 start = PrefixHandler(commands.PREFIXES, commands.HELP, _start)
 
 
-def _pos(update: Update, context: CallbackContext):
+def _pos(update: Update, context: CallbackContext, short=True):
     chat_settings = context.bot.chat_settings.get_settings(update.message.chat_id)
     if chat_settings.current_cup == CupType.AI:
-        return ai_handlers.pos_callback(update, context)
+        return ai_handlers.pos_callback(update, context, short)
     if chat_settings.current_cup == CupType.ML:
-        return ml_handlers.pos_callback(update, context)
+        return ml_handlers.pos_callback(update, context, short)
     update.message.reply_text("🔥❓")
 
 
-pos = PrefixHandler(commands.PREFIXES, commands.POS, _pos)
+pos = PrefixHandler(commands.PREFIXES, commands.POS, partial(_pos, short=True))
+poos = PrefixHandler(commands.PREFIXES, commands.POOS, partial(_pos, short=False))
 
 
-def _top(update: Update, context: CallbackContext):
+def _top(update: Update, context: CallbackContext, short=True):
     chat_settings = context.bot.chat_settings.get_settings(update.message.chat_id)
     if chat_settings.current_cup == CupType.AI:
-        return ai_handlers.top_n_callback(update, context)
+        return ai_handlers.top_callback(update, context, short)
     if chat_settings.current_cup == CupType.ML:
-        return ml_handlers.top_n_callback(update, context)
+        return ml_handlers.top_callback(update, context, short)
     update.message.reply_text("🔥❓")
 
 
-top = PrefixHandler(commands.PREFIXES, commands.TOP, _top)
+top = PrefixHandler(commands.PREFIXES, commands.TOP, partial(_top, short=True))
+toop = PrefixHandler(commands.PREFIXES, commands.TOOP, partial(_top, short=False))
 
 
 @chat_admins_only
