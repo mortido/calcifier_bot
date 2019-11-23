@@ -19,10 +19,7 @@ def _subs_list(update: Update, context: CallbackContext):
         reply_rows = ["Ваши подписки:"]
         reply_rows.append("```")
         for s in subs:
-            text = f"{s.type.value}"
-            if s.data is not None:
-                text += f": {str(s.data)}"
-            reply_rows.append(text)
+            reply_rows.append(str(s))
 
         reply_rows.append("```")
         update.message.reply_text("\n".join(reply_rows), parse_mode=ParseMode.MARKDOWN)
@@ -40,11 +37,12 @@ def _start(update: Update, context: CallbackContext):
     reply_rows = ["🔥💬"]
     reply_rows.append(f"/{commands.SUBS[0]} - Список активных подписок")
     reply_rows.append(f"/{commands.SUB_AI_FORUM[0]} - подписка на обновление RAIC форума")
+    reply_rows.append(f"/{commands.SUB_AI_GAMES[0]} nickname... - подписка на системные игры")
     reply_rows.append(f"/{commands.CONFIG[0]} - настройка бота")
 
-    reply_rows.append(f"/{commands.POS_AI[0]} [nickname...] - позиции участников в AI Cup")
+    reply_rows.append(f"/{commands.POS_AI[0]} nickname... - позиции участников в AI Cup")
     reply_rows.append(f"/{commands.TOP_AI[0]} [N] - топ участников AI Cup")
-    reply_rows.append(f"/{commands.POS_ML[0]} [nickname...] - позиции участников в ML Cup")
+    reply_rows.append(f"/{commands.POS_ML[0]} nickname... - позиции участников в ML Cup")
     reply_rows.append(f"/{commands.TOP_ML[0]} [N] - топ участников ML Cup")
     reply_rows.append("")
 

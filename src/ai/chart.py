@@ -5,7 +5,7 @@ from datetime import datetime
 from threading import Lock
 import copy
 import logging
-import pickle
+from typing import List
 from lxml import html
 import time
 import traceback
@@ -44,6 +44,9 @@ LANGUAGES = {
     "LangIc-30": "PyPy3",
 }
 
+STANDINGS_XPATH_TR = '//div[@class="commonBottom"]/table/tbody/tr'
+GAMES_XPATH_GAME = '//div[@class="commonBottom"]/table/tbody/tr'
+
 
 class Player:
     def __init__(self, username, language, games_count, winrate, score, delta):
@@ -55,16 +58,30 @@ class Player:
         self.language = language
 
 
+class Game:
+    def __init__(self, gid, token, gtype, players, scores, deltas, places):
+        self.gid = gid
+        self.token = token
+        self.gtype = gtype
+        self.players = players
+        self.scores = scores
+        self.deltas = deltas
+        self.places = places
+
+
 class Chart:
-    def __init__(self, url, expiration_time):
+    def __init__(self, standing_url, games_url, expiration_time):
         self._lock = Lock()
-        self._url = url
+        self._standing_url = standing_url
+        self._games_url = games_url
+        self._last_game = None
         self.name = None
         self._top_players = []
         self._players = []
         self._expiration_time = expiration_time
         self._last_top_update_time = 0
         self._last_all_update_time = 0
+        self._min_game_id = self._get_latest_game_id()
 
     def _update_top(self):
         if time.time() - self._last_top_update_time < self._expiration_time:
@@ -100,9 +117,10 @@ class Chart:
     def grab_standings_page(self, page):
         players = []
         places = []
-        logger.info(f"Parsing standings page {page} for url {self._url}")
+        url = f"{self._standing_url}page/{page}?locale=ru"
+        logger.info(f"Parsing standings page {url}")
 
-        page = requests.get(f"{self._url}page/{page}?locale=ru")
+        page = requests.get(url)
         tree = html.fromstring(page.content)
         self.name = " ".join(tree.xpath("//div[@class='breadcrumb']")[0].text_content().split())
         for tr in tree.xpath('//div[@class="commonBottom"]/table/tbody/tr'):
@@ -140,3 +158,71 @@ class Chart:
             if any(substring in p_name for substring in usernames):
                 result.append((place, copy.deepcopy(player)))
         return result
+
+    def get_new_games(self) -> List[Game]:
+        page = 1
+        games = []
+        while True:
+            end_reached, page_games = self._grab_games_page(page)
+            page += 1
+            games += page_games
+            if not page_games or end_reached:
+                break
+        return games
+
+    def reset_to_game(self, game_id):
+        self._min_game_id = game_id
+
+    def _get_latest_game_id(self):
+        url = f"{self._games_url}"
+        logger.info(f"Parsing games page {url} to get latest game id")
+
+        try:
+            page = requests.get(url)
+            tree = html.fromstring(page.content)
+            tds = tree.xpath(GAMES_XPATH_GAME)[0].xpath("td")
+            return int(tds[0].text_content().strip())-1
+        except BaseException:
+            logger.error("Can't get last game id - fallback to 0")
+            return 0
+
+    def _grab_games_page(self, page):
+        games = []
+        url = f"{self._games_url}page/{page}"
+        logger.info(f"Parsing games page {url}")
+
+        page = requests.get(url)
+        tree = html.fromstring(page.content)
+        end_reached = False
+        try:
+            for tr in tree.xpath(GAMES_XPATH_GAME):
+                tds = tr.xpath("td")
+                game_id = int(tds[0].text_content().strip())
+
+                if self._min_game_id and game_id <= self._min_game_id:
+                    end_reached = True
+                    break
+
+                if "Game is testing now" in tr.text_content():
+                    logger.info("Skipping game {}, still testing".format(game_id))
+                    new_start = game_id
+                    continue
+
+                gtype = tds[1].text_content().strip()
+                creator = tds[3].text_content().strip()
+                players = tds[4].text_content().split()
+                scores = tds[6].text_content().split()
+                places = tds[7].text_content().split()
+                deltas = tds[8].text_content().split()
+                token = tds[9].xpath("div")[0].get("data-token")
+                if not deltas:
+                    # deltas = [None] * len(scores)
+                    logger.debug("Game {} is not ready yet".format(players))
+                    continue
+
+                game = Game(game_id, token, gtype, players, scores, deltas, places)
+                logger.debug("Adding game {}".format(game_id))
+                games.append(game)
+        except Exception:
+            logger.info(traceback.format_exc())
+        return end_reached, games

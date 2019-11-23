@@ -1,5 +1,5 @@
 from typing import List
-from ai.chart import Player
+from ai.chart import Player, Game
 
 
 def format_topic(topic):
@@ -84,6 +84,21 @@ def format_pos(chart_name, players):
             str(i + 1).ljust(4),
             trim_len(player.username, 19).ljust(20),
             player.score.rjust(6)
+        ))
+    rows.append("```")
+    return "\n".join(rows)
+
+
+def format_game(game: Game):
+    rows = [f"http://russianaicup.ru/game/view/{game.gid}"]
+    rows.append("```")
+    rows.append(f"{game.gtype.ljust(10)}              SCORE   Δ")
+    for i in range(len(game.scores)):
+        rows.append("{}{}{}{}".format(
+            game.places[i].ljust(3),
+            trim_len(game.players[i], 19).ljust(20),
+            game.scores[i].rjust(6),
+            game.deltas[i].rjust(4)
         ))
     rows.append("```")
     return "\n".join(rows)

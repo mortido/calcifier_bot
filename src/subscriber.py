@@ -7,7 +7,6 @@ import copy
 from redis.client import Redis
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 SUBSCRIBES_KEY = "subscribes"
@@ -15,6 +14,7 @@ SUBSCRIBES_KEY = "subscribes"
 
 class SubscriptionType(Enum):
     AI_FORUM = "ai_forum"
+    AI_GAMES = "ai_games"
 
 
 class Subscription:
@@ -23,8 +23,17 @@ class Subscription:
         self.chat_id = chat_id
         self.data = data
 
-    def __str__(self):
+    def __repr__(self):
         return f"Subscription<{self.type} {self.chat_id} {self.data}>"
+
+    def __str__(self):
+        if self.type == SubscriptionType.AI_GAMES:
+            return f"{self.type}: {' '.join(self.data)}>"
+        if self.type == SubscriptionType.AI_FORUM:
+            return f"{self.type}"
+
+        return f"{self.type}: {self.data}>"
+
 
 class Subscriber:
     """
@@ -59,7 +68,8 @@ class Subscriber:
             self._subs_by_type[stype][chat_id] = data
 
             if self._storage:
-                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+                self._storage.hset(SUBSCRIBES_KEY, chat_id,
+                                   pickle.dumps(self._subs_by_chat[chat_id]))
             return True
 
     def remove_sub(self, chat_id, stype: SubscriptionType):
@@ -72,21 +82,22 @@ class Subscriber:
             del self._subs_by_type[stype][chat_id]
 
             if self._storage:
-                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+                self._storage.hset(SUBSCRIBES_KEY, chat_id,
+                                   pickle.dumps(self._subs_by_chat[chat_id]))
             return True
 
-    def update_sub(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
+    def update_sub(self, sub: Subscription):
         with self._lock:
-            chat_id = str(chat_id)
-            if stype.value not in self._subs_by_chat[chat_id]:
+            if sub.type.value not in self._subs_by_chat[sub.chat_id]:
                 return False
-            stype = stype.value
-            data = copy.deepcopy(data)
-            self._subs_by_chat[chat_id][stype] = data
-            self._subs_by_type[stype][chat_id] = data
+            stype = sub.type.value
+            data = copy.deepcopy(sub.data)
+            self._subs_by_chat[sub.chat_id][stype] = data
+            self._subs_by_type[stype][sub.chat_id] = data
 
             if self._storage:
-                self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(self._subs_by_chat[chat_id]))
+                self._storage.hset(SUBSCRIBES_KEY, sub.chat_id,
+                                   pickle.dumps(self._subs_by_chat[sub.chat_id]))
             return True
 
     def get_subs_by_chat(self, chat_id) -> List[Subscription]:

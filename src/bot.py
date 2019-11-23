@@ -21,6 +21,7 @@ import handlers
 
 def error_handler(update: Update, context: CallbackContext):
     logger.warning('Update "%s" caused error "%s"' % (update, context.error))
+    update.message.reply_text("Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
 
 
 def run():
@@ -65,7 +66,7 @@ def run():
     dp.add_handler(ml_handlers.pos)
     dp.add_handler(ml_handlers.poos)
 
-    bot.ai_chart = AIChart(config.ai_chart_url, config.ai_chart_refresh_delay)
+    bot.ai_chart = AIChart(config.ai_chart_url, config.ai_games_url, config.ai_chart_refresh_delay)
     bot.ai_forum = AIForum(config.forum_rss_url, redis_storage)
     job_queue = updater.job_queue
     job_queue.run_repeating(ai_jobs.gather_forum_updates,
@@ -77,6 +78,11 @@ def run():
                             config.forum_notify_delay,
                             first=0.0,
                             context=bot.ai_forum)
+
+    job_queue.run_repeating(ai_jobs.notify_about_new_games,
+                            config.game_notify_delay,
+                            first=0.0,
+                            context=bot.ai_chart)
 
     if config.host:
         logger.info("Host specified - starting webhook...")
