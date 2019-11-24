@@ -33,12 +33,12 @@ def format_toop(chart_name, players: List[Player]):
     rows = ["```"]
     rows.append(chart_name.upper())
     rows.append("")
-    rows.append("    PLAYER             LANGUAGE  W.R. SCORE")
+    rows.append("    PLAYER           LANGUAGE  W.R. SCORE")
     rows.append("-------------------------------------------")
     for i, player in enumerate(players):
         rows.append("{}{}{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 18).ljust(19),
+            trim_len(player.username, 16).ljust(17),
             player.language.ljust(9),
             player.winrate.rjust(5),
             player.score.rjust(6)
@@ -51,12 +51,12 @@ def format_top(chart_name, players: List[Player]):
     rows = ["```"]
     rows.append(chart_name.upper())
     rows.append("")
-    rows.append("    PLAYER               SCORE")
+    rows.append("    PLAYER            SCORE")
     rows.append("------------------------------")
     for i, player in enumerate(players):
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 19).ljust(20),
+            trim_len(player.username, 16).ljust(17),
             player.score.rjust(6)
         ))
     rows.append("```")
@@ -68,7 +68,7 @@ def format_poos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 18).ljust(19),
+            trim_len(player.username, 16).ljust(17),
             player.language.ljust(9),
             player.winrate.rjust(5),
             player.score.rjust(6)
@@ -82,7 +82,7 @@ def format_pos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 19).ljust(20),
+            trim_len(player.username, 16).ljust(17),
             player.score.rjust(6)
         ))
     rows.append("```")
@@ -92,11 +92,11 @@ def format_pos(chart_name, players):
 def format_game(game: Game):
     rows = [f"http://russianaicup.ru/game/view/{game.gid}"]
     rows.append("```")
-    rows.append(f"{game.gtype.ljust(10)}              SCORE   Δ")
+    rows.append(f"{game.gtype.ljust(10)}           SCORE   Δ")
     for i in range(len(game.scores)):
         rows.append("{}{}{}{}".format(
             game.places[i].ljust(3),
-            trim_len(game.players[i], 19).ljust(20),
+            trim_len(game.players[i], 16).ljust(17),
             game.scores[i].rjust(6),
             game.deltas[i].rjust(4)
         ))
