@@ -56,8 +56,8 @@ def format_top(chart_name, players: List[Player]):
     for i, player in enumerate(players):
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 10).ljust(10),
-            player.score.rjust(6)
+            trim_len(player.username, 11).ljust(11),
+            player.score.rjust(5)
         ))
     rows.append("```")
     return "\n".join(rows)
@@ -82,8 +82,8 @@ def format_pos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 10).ljust(10),
-            player.score.rjust(6)
+            trim_len(player.username, 11).ljust(11),
+            player.score.rjust(5)
         ))
     rows.append("```")
     return "\n".join(rows)
