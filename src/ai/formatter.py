@@ -26,7 +26,7 @@ def format_forum_updates(topics):
 
 
 def trim_len(string, max_len):
-    return string if len(string) <= max_len else string[:max_len - 3] + "..."
+    return string if len(string) <= max_len else string[:max_len - 1] + "…"
 
 
 def format_toop(chart_name, players: List[Player]):
@@ -56,7 +56,7 @@ def format_top(chart_name, players: List[Player]):
     for i, player in enumerate(players):
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 7).ljust(8),
+            trim_len(player.username, 7).ljust(7),
             player.score.rjust(6)
         ))
     rows.append("```")
@@ -82,7 +82,7 @@ def format_pos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 7).ljust(8),
+            trim_len(player.username, 7).ljust(7),
             player.score.rjust(6)
         ))
     rows.append("```")
