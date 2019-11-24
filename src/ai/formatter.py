@@ -56,7 +56,7 @@ def format_top(chart_name, players: List[Player]):
     for i, player in enumerate(players):
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 7).ljust(7),
+            trim_len(player.username, 10).ljust(10),
             player.score.rjust(6)
         ))
     rows.append("```")
@@ -68,7 +68,7 @@ def format_poos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 16).ljust(17),
+            trim_len(player.username, 16).ljust(16),
             player.language.ljust(9),
             player.winrate.rjust(5),
             player.score.rjust(6)
@@ -82,7 +82,7 @@ def format_pos(chart_name, players):
     for i, player in players:
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
-            trim_len(player.username, 7).ljust(7),
+            trim_len(player.username, 10).ljust(10),
             player.score.rjust(6)
         ))
     rows.append("```")
@@ -96,7 +96,7 @@ def format_game(game: Game):
     for i in range(len(game.scores)):
         rows.append("{}{}{}{}".format(
             game.places[i].ljust(3),
-            trim_len(game.players[i], 16).ljust(17),
+            trim_len(game.players[i], 16).ljust(16),
             game.scores[i].rjust(6),
             game.deltas[i].rjust(4)
         ))
