@@ -34,7 +34,7 @@ def format_toop(chart_name, players: List[Player]):
     rows.append(chart_name.upper())
     rows.append("")
     rows.append("    PLAYER           LANGUAGE  W.R. SCORE")
-    rows.append("-------------------------------------------")
+    rows.append("-----------------------------------------")
     for i, player in enumerate(players):
         rows.append("{}{}{}{}{}".format(
             str(i + 1).ljust(4),
@@ -52,7 +52,7 @@ def format_top(chart_name, players: List[Player]):
     rows.append(chart_name.upper())
     rows.append("")
     rows.append("    PLAYER            SCORE")
-    rows.append("------------------------------")
+    rows.append("---------------------------")
     for i, player in enumerate(players):
         rows.append("{}{}{}".format(
             str(i + 1).ljust(4),
