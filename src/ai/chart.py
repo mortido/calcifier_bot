@@ -190,7 +190,6 @@ class Chart:
         games = []
         url = f"{self._games_url}page/{page}"
         logger.info(f"Parsing games page {url}")
-
         page = requests.get(url)
         tree = html.fromstring(page.content)
         end_reached = False
@@ -203,7 +202,7 @@ class Chart:
                     end_reached = True
                     break
 
-                if "Game is testing now" in tr.text_content():
+                if "Game is testing now" in tr.text_content() or "Game is in queue" in tr.text_content():
                     logger.info("Skipping game {}, still testing".format(game_id))
                     new_start = game_id
                     continue
