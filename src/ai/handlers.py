@@ -51,7 +51,7 @@ def _subscribe_games(update: Update, context: CallbackContext):
     if sub is None:
         usernames = set(usernames[:MAX_USERNAMES])
         context.bot.subscriber.add_sub(chat_id, SubscriptionType.AI_GAMES, usernames)
-        update.message.reply_text(f"Подписка на системные игры созданна")
+        update.message.reply_text(f"Подписка на системные игры создана")
     else:
         if len(usernames) + len(sub.data) > MAX_USERNAMES:
             usernames = usernames[:MAX_USERNAMES - len(sub.data)]
@@ -105,8 +105,11 @@ def top_callback(update: Update, context: CallbackContext, short=True):
             logger.warning(f"Couldn't parse N for ai top callback: {context.args[0]}")
             update.message.reply_text("Ты  меня  ог🔥рчаешь")
             return
-        if n < 1:
-            update.message.reply_text("Выше  т🔥лько  C🔥mmandos")
+        if n == 0:
+            update.message.reply_text("C🔥mmandos")
+            return
+        if n < 0:
+            update.message.reply_text("Не  н🔥до так")
             return
     players = context.bot.ai_chart.get_top(n)
     if short:
@@ -128,11 +131,11 @@ def pos_callback(update: Update, context: CallbackContext, short=True):
 
     usernames = context.args
     if not usernames:
-        update.message.reply_text("Ст🔥ит  ук🔥з🔥ть  ник")
+        update.message.reply_text("Ст🔥ит  ук🔥зать  ник")
         return
     players = context.bot.ai_chart.get_pos(usernames)
     if not players:
-        update.message.reply_text("Не  н🔥шел  т🔥ких  уч🔥стник🔥в")
+        update.message.reply_text("Не  н🔥шел  таких  участник🔥в")
         return
 
     if short:
