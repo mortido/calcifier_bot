@@ -166,7 +166,7 @@ class Chart:
             end_reached, page_games = self._grab_games_page(page)
             page += 1
             games += page_games
-            if not page_games or end_reached:
+            if end_reached:
                 break
         return games
 
@@ -224,4 +224,5 @@ class Chart:
                 games.append(game)
         except Exception:
             logger.info(traceback.format_exc())
+            end_reached = True
         return end_reached, games
