@@ -74,7 +74,7 @@ class Player:
 
 
 class Game:
-    def __init__(self, gid, token, gtype, players, scores, deltas, places):
+    def __init__(self, gid, token, gtype, players, scores, deltas, places, global_places):
         self.gid = gid
         self.token = token
         self.gtype = gtype
@@ -82,6 +82,7 @@ class Game:
         self.scores = scores
         self.deltas = deltas
         self.places = places
+        self.global_places = global_places
 
 
 class Chart:
@@ -93,6 +94,7 @@ class Chart:
         self.name = None
         self._top_players = []
         self._players = []
+        self._places = {}
         self._expiration_time = expiration_time
         self._last_top_update_time = 0
         self._last_all_update_time = 0
@@ -109,13 +111,14 @@ class Chart:
             self._top_players = page_players
             logger.info("Top of ai chart updated")
 
-    def _update_all(self):
-        if time.time() - self._last_all_update_time < self._expiration_time:
+    def _update_all(self, force=False):
+        if not force and (time.time() - self._last_all_update_time < self._expiration_time):
             return
 
         with self._lock:
             logger.info("Updating all ai chart...")
             self._players.clear()
+            self._places.clear()
             page = 1
             last_parse_place = None
             while True:
@@ -124,6 +127,8 @@ class Chart:
                     break
 
                 self._players += page_players
+                for place, player in zip(page_places, page_players):
+                    self._places[player.username] = place
                 last_parse_place = page_places[-1]
                 page += 1
 
@@ -178,6 +183,7 @@ class Chart:
     def get_new_games(self) -> List[Game]:
         page = 1
         games = []
+        self._update_all(force=True)
         while True:
             end_reached, page_games = self._grab_games_page(page)
             page += 1
@@ -235,7 +241,9 @@ class Chart:
                     logger.debug("Game {} is not ready yet".format(players))
                     continue
 
-                game = Game(game_id, token, gtype, players, scores, deltas, places)
+                global_places = [self._places[un] for un in players]
+
+                game = Game(game_id, token, gtype, players, scores, deltas, places, global_places)
                 logger.debug("Adding game {}".format(game_id))
                 games.append(game)
         except Exception:

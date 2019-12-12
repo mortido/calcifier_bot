@@ -107,6 +107,8 @@ win_phrases = [
     "Ты можешь еще лучше!",
     "Как ты хорош!",
     "Как сильны твои лапищи!",
+    "Ты на правильном пути",
+    "Бах! Тыщ! Бум!"
 ]
 
 loose_phrases = [
@@ -133,13 +135,14 @@ def format_game(game: Game, win):
     rows = [random.choice(win_phrases if win else loose_phrases),
             f"http://russianaicup.ru/game/view/{game.gid}",
             "```",
-            f"{game.gtype.ljust(10)}          SCORE    Δ"]
+            f"{game.gtype.ljust(10)}          SCORE    Δ  LB"]
     for i in range(len(game.scores)):
         rows.append("{}{}{}{}".format(
             game.places[i].ljust(3),
             trim_len(game.players[i], 16).ljust(16),
             game.scores[i].rjust(6),
-            game.deltas[i].rjust(5)
+            game.deltas[i].rjust(5),
+            game.global_places[i].rjust(4)
         ))
     rows.append("```")
     return "\n".join(rows)
