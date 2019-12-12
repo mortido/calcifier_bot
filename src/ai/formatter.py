@@ -137,7 +137,7 @@ def format_game(game: Game, win):
             "```",
             f"{game.gtype.ljust(10)}          SCORE    Δ  LB"]
     for i in range(len(game.scores)):
-        rows.append("{}{}{}{}".format(
+        rows.append("{}{}{}{}{}".format(
             game.places[i].ljust(3),
             trim_len(game.players[i], 16).ljust(16),
             game.scores[i].rjust(6),
