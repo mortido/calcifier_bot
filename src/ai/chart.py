@@ -96,6 +96,7 @@ class Chart:
         self._expiration_time = expiration_time
         self._last_top_update_time = 0
         self._last_all_update_time = 0
+        self._min_game_id = 0
         self._min_game_id = self._get_latest_game_id()
 
     def _update_top(self):
@@ -197,9 +198,9 @@ class Chart:
         while True:
             end_reached, games = self._grab_games_page(page)
             page += 1
-            if end_reached or len(games)>0:
+            if end_reached or len(games) > 0:
                 break
-        return games[0].gid if len(games)>0 else 0
+        return games[0].gid if len(games) > 0 else 0
 
     def _grab_games_page(self, page):
         games = []
