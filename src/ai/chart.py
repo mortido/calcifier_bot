@@ -241,7 +241,7 @@ class Chart:
                     logger.debug("Game {} is not ready yet".format(players))
                     continue
 
-                global_places = [self._places[un] for un in players]
+                global_places = [self._places.get(un, -1) for un in players]
 
                 game = Game(game_id, token, gtype, players, scores, deltas, places, global_places)
                 logger.debug("Adding game {}".format(game_id))
