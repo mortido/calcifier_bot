@@ -197,9 +197,9 @@ class Chart:
         while True:
             end_reached, games = self._grab_games_page(page)
             page += 1
-            if end_reached or games:
+            if end_reached or len(games)>0:
                 break
-        return games[0].gid if games else 0
+        return games[0].gid if len(games)>0 else 0
 
     def _grab_games_page(self, page):
         games = []
