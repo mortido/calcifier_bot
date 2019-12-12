@@ -42,6 +42,21 @@ LANGUAGES = {
     "LangIc-28": "PyPy2",
     # "LangIc-29": "PyPy2",
     "LangIc-30": "PyPy3",
+    "LangIc-java": "Java",
+    "LangIc-cpp": "C++",
+    "LangIc-csharp": "C#",
+    "LangIc-python": "Python",
+    "LangIc-pascal": "Pascal",
+    "LangIc-dlang": "D",
+    "LangIc-c": "C",
+    "LangIc-ruby": "Ruby",
+    "LangIc-scala": "Scala",
+    "LangIc-kotlin": "Kotlin",
+    "LangIc-go": "Go",
+    "LangIc-javascript": "JS",
+    "LangIc-swift": "Swift",
+    "LangIc-rust": "Rust",
+    "LangIc-nim": "Nim",
 }
 
 STANDINGS_XPATH_TR = '//div[@class="commonBottom"]/table/tbody/tr'
