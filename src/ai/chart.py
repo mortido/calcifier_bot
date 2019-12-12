@@ -192,14 +192,14 @@ class Chart:
         url = f"{self._games_url}"
         logger.info(f"Parsing games page {url} to get latest game id")
 
-        try:
-            page = requests.get(url)
-            tree = html.fromstring(page.content)
-            tds = tree.xpath(GAMES_XPATH_GAME)[0].xpath("td")
-            return int(tds[0].text_content().strip())
-        except BaseException:
-            logger.error("Can't get last game id - fallback to 0")
-            return 0
+        page = 1
+        games = []
+        while True:
+            end_reached, games = self._grab_games_page(page)
+            page += 1
+            if end_reached or games:
+                break
+        return games[0].gid if games else 0
 
     def _grab_games_page(self, page):
         games = []
