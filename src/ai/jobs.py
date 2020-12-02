@@ -23,7 +23,7 @@ def notify_about_new_games(context: CallbackContext):
                     for i, player in enumerate(game.players):
                         if player in sub.data:
                             post_it = True
-                            win = (i == 0)
+                            win = game.deltas[i] > 0
                             game.players[i] = "* " + player
                     if post_it:
                         context.bot.send_message(chat_id=sub.chat_id,
