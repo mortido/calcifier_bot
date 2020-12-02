@@ -19,15 +19,15 @@ def notify_about_new_games(context: CallbackContext):
             for sub in subs:
                 for game in new_games:
                     post_it = False
-                    win = False
+                    player_idx = -1
                     for i, player in enumerate(game.players):
                         if player in sub.data:
                             post_it = True
-                            win = game.deltas[i] > 0
-                            game.players[i] = "* " + player
+                            player_idx = i
+                            game.players[i] = player
                     if post_it:
                         context.bot.send_message(chat_id=sub.chat_id,
-                                                 text=formatter.format_game(game, win),
+                                                 text=formatter.format_game(game, player_idx),
                                                  disable_web_page_preview=True,
                                                  parse_mode=ParseMode.MARKDOWN)
         except BaseException as e:
