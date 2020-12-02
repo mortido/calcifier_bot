@@ -36,7 +36,6 @@ subs_list = PrefixHandler(commands.PREFIXES, commands.SUBS, _subs_list)
 def _start(update: Update, context: CallbackContext):
     reply_rows = ["🔥💬"]
     reply_rows.append(f"/{commands.SUBS[0]} - Список активных подписок")
-    reply_rows.append(f"/{commands.SUB_AI_FORUM[0]} - подписка на обновление RAIC форума")
     reply_rows.append(f"/{commands.SUB_AI_GAMES[0]} nickname... - подписка на системные игры")
     reply_rows.append(f"/{commands.CONFIG[0]} - настройка бота")
 
@@ -52,7 +51,7 @@ def _start(update: Update, context: CallbackContext):
     reply_rows.append(f"/{commands.TOP[0]} [N] - топ участников")
 
     reply_rows.append(
-        f"Для отключения подписок используйте unsub команды, например /{commands.UNSUB_AI_FORUM[0]}")
+        f"Для отключения подписок используйте unsub команды, например /{commands.UNSUB_AI_GAMES[0]}")
 
     update.message.reply_text("\n".join(reply_rows))
 

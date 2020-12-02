@@ -12,7 +12,6 @@ from chats_settings import ChatSettingsStorage
 from settings import Config
 from ai import handlers as ai_handlers
 from ai import jobs as ai_jobs
-from ai.forum import Forum as AIForum
 from ai.chart import Chart as AIChart
 from ml import handlers as ml_handlers
 from subscriber import Subscriber
@@ -53,8 +52,6 @@ def run():
     dp.add_handler(handlers.pos)
     dp.add_handler(handlers.poos)
     dp.add_handler(handlers.configure)
-    dp.add_handler(ai_handlers.subscribe_forum)
-    dp.add_handler(ai_handlers.unsubscribe_forum)
     dp.add_handler(ai_handlers.subscribe_games)
     dp.add_handler(ai_handlers.unsubscribe_games)
     dp.add_handler(ai_handlers.top)
@@ -67,17 +64,7 @@ def run():
     dp.add_handler(ml_handlers.poos)
 
     bot.ai_chart = AIChart(config.ai_chart_url, config.ai_games_url, config.ai_chart_refresh_delay)
-    bot.ai_forum = AIForum(config.forum_rss_url, redis_storage)
     job_queue = updater.job_queue
-    job_queue.run_repeating(ai_jobs.gather_forum_updates,
-                            config.forum_refresh_delay,
-                            first=0.0,
-                            context=bot.ai_forum)
-
-    job_queue.run_repeating(ai_jobs.notify_about_forum_updates,
-                            config.forum_notify_delay,
-                            first=0.0,
-                            context=bot.ai_forum)
 
     job_queue.run_repeating(ai_jobs.notify_about_new_games,
                             config.game_notify_delay,

@@ -13,7 +13,6 @@ SUBSCRIBES_KEY = "subscribes"
 
 
 class SubscriptionType(Enum):
-    AI_FORUM = "ai_forum"
     AI_GAMES = "ai_games"
 
 
@@ -29,8 +28,6 @@ class Subscription:
     def __str__(self):
         if self.type == SubscriptionType.AI_GAMES:
             return f"{self.type.value}: {' '.join(self.data)}"
-        if self.type == SubscriptionType.AI_FORUM:
-            return f"{self.type.value}"
 
         return f"{self.type.value}: {self.data}"
 

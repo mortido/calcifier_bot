@@ -17,14 +17,6 @@ def format_category(category, topics):
            '\n'.join(format_topic(topic) for topic in topics if topic.category == category)
 
 
-def format_forum_updates(topics):
-    categories = sorted(set(topic.category for topic in topics))
-    result = []
-    for category in categories:
-        result.append(format_category(category, topics))
-    return '\n\n'.join(result)
-
-
 def trim_len(string, max_len):
     return string if len(string) <= max_len else string[:max_len - 1] + "…"
 

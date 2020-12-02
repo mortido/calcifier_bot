@@ -5,8 +5,6 @@ TOP_AI = ["top_ai", "topai"]
 TOOP_AI = ["toop_ai", "toopai"]
 POS_AI = ["pos_ai", "posai"]
 POOS_AI = ["poos_ai", "poosai"]
-SUB_AI_FORUM = ["sub_ai_forum"]
-UNSUB_AI_FORUM = ["unsub_ai_forum"]
 SUB_AI_GAMES = ["sub_ai_games"]
 UNSUB_AI_GAMES = ["unsub_ai_games"]
 
