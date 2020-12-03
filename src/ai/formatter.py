@@ -140,7 +140,7 @@ loose_phrases = [
 
 
 def format_game(game: Game, player_idx):
-    win = game.deltas[player_idx] > 0
+    win = int(game.deltas[player_idx]) > 0
     rows = [random.choice(win_phrases if win else loose_phrases),
             f"http://russianaicup.ru/game/view/{game.gid}",
             "```",
