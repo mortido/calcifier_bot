@@ -15,6 +15,10 @@ SUBSCRIBES_KEY = "subscribes"
 class SubscriptionType(Enum):
     AI_GAMES = "ai_games"
 
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
+
 
 class Subscription:
     def __init__(self, chat_id, stype: SubscriptionType, data: Optional[dict] = None):
@@ -49,7 +53,13 @@ class Subscriber:
             for chat_id in known_chats:
                 chat_id = chat_id.decode("utf-8")
                 chat_subs = self._storage.hget(SUBSCRIBES_KEY, chat_id)
-                self._subs_by_chat[chat_id] = pickle.loads(chat_subs)
+                subs = pickle.loads(chat_subs)
+                depricated = [sub for sub in subs if not SubscriptionType.has_value(sub)]
+                if depricated:
+                    for sub in depricated:
+                        del subs[sub]
+                    self._storage.hset(SUBSCRIBES_KEY, chat_id, pickle.dumps(subs))
+                self._subs_by_chat[chat_id] = subs
                 for sub_type, sub_data in self._subs_by_chat[chat_id].items():
                     self._subs_by_type[sub_type][chat_id] = sub_data
 
