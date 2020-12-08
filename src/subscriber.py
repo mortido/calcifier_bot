@@ -14,6 +14,7 @@ SUBSCRIBES_KEY = "subscribes"
 
 class SubscriptionType(Enum):
     AI_GAMES = "ai_games"
+    AI_CHAT_TOP = "ai_chat_top"
 
     @classmethod
     def has_value(cls, value):

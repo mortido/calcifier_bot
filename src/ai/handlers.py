@@ -67,6 +67,56 @@ def _unsubscribe_games(update: Update, context: CallbackContext):
 unsubscribe_games = PrefixHandler(commands.PREFIXES, commands.UNSUB_AI_GAMES, _unsubscribe_games)
 
 
+def _subscribe_ai_chat_top(update: Update, context: CallbackContext):
+    usernames = set(context.args)
+    if not usernames:
+        update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+
+    chat_id = update.message.chat_id
+    sub = context.bot.subscriber.get_sub(chat_id, SubscriptionType.AI_CHAT_TOP)
+    if sub is None:
+        context.bot.subscriber.add_sub(chat_id, SubscriptionType.AI_CHAT_TOP, usernames)
+    else:
+        sub.data |= usernames
+        context.bot.subscriber.update_sub(sub)
+        usernames = sub.data
+    update.message.reply_text(
+        f"Топ чата: *{', '.join(sorted(usernames))}*",
+        parse_mode=ParseMode.MARKDOWN)
+
+
+subscribe_ai_chat_top = PrefixHandler(commands.PREFIXES, commands.SUB_AI_CHAT_TOP,
+                                      _subscribe_ai_chat_top)
+
+
+def _unsubscribe_ai_chat_top(update: Update, context: CallbackContext):
+    usernames = set(context.args)
+    if not usernames:
+        update.message.reply_text("Ст🔥ит  ук🔥зать  ник")
+        return
+
+    chat_id = update.message.chat_id
+    sub = context.bot.subscriber.get_sub(chat_id, SubscriptionType.AI_CHAT_TOP)
+    if sub is None:
+        update.message.reply_text("Топ чата пуст")
+        return
+
+    sub.data.difference_update(usernames)
+    if sub.data:
+        context.bot.subscriber.update_sub(sub)
+        update.message.reply_text(
+            f"Топ чата: *{', '.join(sorted(sub.data))}*",
+            parse_mode=ParseMode.MARKDOWN)
+    else:
+        context.bot.subscriber.remove_sub(chat_id, SubscriptionType.AI_CHAT_TOP)
+        update.message.reply_text(f"Топ чата пуст")
+
+
+unsubscribe_ai_chat_top = PrefixHandler(commands.PREFIXES, commands.UNSUB_AI_CHAT_TOP,
+                                        _unsubscribe_ai_chat_top)
+
+
 def top_callback(update: Update, context: CallbackContext, short=True):
     context.bot.send_chat_action(chat_id=update.message.chat_id,
                                  action=ChatAction.TYPING)
@@ -121,3 +171,23 @@ def pos_callback(update: Update, context: CallbackContext, short=True):
 
 pos = PrefixHandler(commands.PREFIXES, commands.POS_AI, partial(pos_callback, short=True))
 poos = PrefixHandler(commands.PREFIXES, commands.POOS_AI, partial(pos_callback, short=False))
+
+
+def chat_top_callback(update: Update, context: CallbackContext, short=True):
+    context.bot.send_chat_action(chat_id=update.message.chat_id,
+                                 action=ChatAction.TYPING)
+
+    chat_id = update.message.chat_id
+    sub = context.bot.subscriber.get_sub(chat_id, SubscriptionType.AI_CHAT_TOP)
+    if not sub or not sub.data:
+        update.message.reply_text("Т🔥п  чат🔥 пуст")
+        return
+    players = context.bot.ai_chart.get_pos(sub.data)
+    if short:
+        text = formatter.format_pos(context.bot.ai_chart.name, players)
+    else:
+        text = formatter.format_poos(context.bot.ai_chart.name, players)
+    update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+
+chat_top = PrefixHandler(commands.PREFIXES, commands.CHAT_TOP, partial(chat_top_callback, short=True))
+chat_toop = PrefixHandler(commands.PREFIXES, commands.CHAT_TOOP, partial(chat_top_callback, short=False))

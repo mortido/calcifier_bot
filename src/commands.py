@@ -5,6 +5,8 @@ TOP_AI = ["top_ai", "topai"]
 TOOP_AI = ["toop_ai", "toopai"]
 POS_AI = ["pos_ai", "posai"]
 POOS_AI = ["poos_ai", "poosai"]
+SUB_AI_CHAT_TOP = ["add_top"]
+UNSUB_AI_CHAT_TOP = ["remove_top"]
 SUB_AI_GAMES = ["sub_ai_games"]
 UNSUB_AI_GAMES = ["unsub_ai_games"]
 
@@ -14,7 +16,9 @@ POS_ML = ["pos_ml", "posml"]
 POOS_ML = ["poos_ml", "poosml"]
 
 TOP = ["top", "топ"]
+CHAT_TOP = ["chat_top", "топ_чата"]
 TOOP = ["toop", "тооп"]
+CHAT_TOOP = ["chat_toop", "тооп_чата"]
 POS = ["pos"]
 POOS = ["poos"]
 

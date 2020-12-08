@@ -57,6 +57,7 @@ LANGUAGES = {
     "LangIc-swift": "Swift",
     "LangIc-rust": "Rust",
     "LangIc-nim": "Nim",
+    "LangIc-fsharp": "F#",
     "LangIc-pypy": "PyPy",
 }
 
@@ -152,8 +153,6 @@ class Chart:
                     del tc[3:5]
                 lng_icon = tr.xpath(".//span[contains(@class, 'lc')]/@class")[0].split()[1]
                 language = LANGUAGES.get(lng_icon, "?")
-                if language == "?":
-                    u=0
                 place = tc[0]
                 places.append(place)
                 player = Player(username=tc[1],
