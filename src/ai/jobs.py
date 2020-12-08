@@ -5,6 +5,7 @@ from telegram import ParseMode
 from subscriber import SubscriptionType
 from ai import formatter
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ def notify_about_new_games(context: CallbackContext):
                                                  text=formatter.format_game(game, player_idx),
                                                  disable_web_page_preview=True,
                                                  parse_mode=ParseMode.MARKDOWN)
+                        time.sleep(1/30)
         except BaseException as e:
             logger.error(f"Error during sending ai games: {e}")
         chart.reset_to_game(new_games[-1].gid)
