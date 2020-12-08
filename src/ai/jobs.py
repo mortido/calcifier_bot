@@ -31,7 +31,7 @@ def notify_about_new_games(context: CallbackContext):
                                                  text=formatter.format_game(game, player_idx),
                                                  disable_web_page_preview=True,
                                                  parse_mode=ParseMode.MARKDOWN)
-                        time.sleep(1/30)
+                        time.sleep(1/10)
         except BaseException as e:
             logger.error(f"Error during sending ai games: {e}")
         chart.reset_to_game(new_games[-1].gid)
