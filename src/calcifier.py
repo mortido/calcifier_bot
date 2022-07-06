@@ -16,6 +16,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+logger = logging.getLogger(__name__)
+
 
 def main():
 
@@ -32,6 +34,9 @@ def main():
 
     config = configuration.from_json_file(args.config_file)
     os.makedirs(os.path.dirname(config.persistent_file), exist_ok=True)
+
+    logger.info(f"Starting Calcifier bot...\n"
+                f"Persistent file: {config.persistent_file}")
     persistent_storage = PicklePersistence(filepath=config.persistent_file)
 
 
