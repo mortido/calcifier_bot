@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ .
 
 # command to run on container start
-CMD [ "python", "./calcifier.py", "-c", "/usr/src/app/persistent/config.json" ]
+ENTRYPOINT [ "python", "./calcifier.py", "-c", "/usr/src/app/persistent/config.json" ]
