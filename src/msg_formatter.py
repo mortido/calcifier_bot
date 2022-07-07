@@ -53,6 +53,16 @@ def format_top(chart_name, scores):
 #     return "\n".join(rows)
 
 
+def chat_logins(logins):
+    msg = "CUPS Логины чата: `"
+    if logins:
+        msg += ", ".join(sorted(logins))
+    else:
+        msg += "СПИСОК ПУСТ"
+    msg += "`"
+    return msg
+
+
 def format_pos(chart_name, players):
     rows = ["```"]
     for i, player in players:
@@ -70,19 +80,19 @@ def td2s(td):
 
 
 def format_chat_info(contest=None, task=None) -> str:
-    lines = ['```']
+    lines = []
     if contest:
-        lines.append(f"Соревнование: {contest['name']}")
+        lines.append(f"Соревнование: `{contest['name']}`")
 
         now = datetime.now(timezone.utc)
         start_date = datetime.fromisoformat(contest['start_date'])
         end_date = datetime.fromisoformat(contest['finish_date'])
         if start_date > now:
-            lines.append(f"Начнется через: {td2s(start_date - now)}")
+            lines.append(f"Начнется через: `{td2s(start_date - now)}`")
         elif end_date > now:
-            lines.append(f"Закончится через: {td2s(end_date - now)}")
+            lines.append(f"Закончится через: `{td2s(end_date - now)}`")
         else:
-            lines.append("Соревнование закончилось.")
+            lines.append("`Соревнование закончилось.`")
 
         lines.append("")
         cround = None
@@ -93,20 +103,19 @@ def format_chat_info(contest=None, task=None) -> str:
                 cround = r
                 break
         if cround:
-            lines.append(f"Раунд: {cround['name']}")
+            lines.append(f"Раунд: `{cround['name']}`")
             if start_date > now:
-                lines.append(f"Начнется через: {td2s(start_date - now)}")
+                lines.append(f"Начнется через: `{td2s(start_date - now)}`")
             else:
-                lines.append(f"Закончится через: {td2s(end_date - now)}")
+                lines.append(f"Закончится через: `{td2s(end_date - now)}`")
             lines.append("")
 
         if task:
-            lines.append(f"Задача: {task['name']}")
+            lines.append(f"Задача: `{task['name']}`")
         else:
-            lines.append(f"Задача: НЕ ВЫБРАНА, ЛИДЕРБОРД НЕДОСТУПЕН")
+            lines.append(f"Задача: `НЕ ВЫБРАНА, ЛИДЕРБОРД НЕДОСТУПЕН`")
     else:
-        lines.append("Соревнование: НЕ ВЫБРАНО")
-    lines.append('```')
+        lines.append("Соревнование: `НЕ ВЫБРАНО`")
     return '\n'.join(lines)
 
 

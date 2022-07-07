@@ -11,7 +11,7 @@ TOOP = ["toop", "тооп", "ещщз"]
 POS = ["pos", "зщы"]
 POOS = ["poos", "зщщы"]
 
-CHAT_TOP = ["chat_top", "топ_чата"]
+CHAT_TOP = ["chat_top", "топ_чата", "top_chat", "ещз_срфе", "срфе_ещз", "njg_xfnf"]
 CHAT_TOOP = ["chat_toop", "тооп_чата"]
 CHAT_ADD = ["chat_add"]
 CHAT_REMOVE = ["chat_remove"]

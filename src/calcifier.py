@@ -37,6 +37,8 @@ def main():
 
     logger.info(f"Starting Calcifier bot... "
                 f"Persistent file: {config.persistent_file}")
+
+    # Using JSON can broke some sets
     persistent_storage = PicklePersistence(filepath=config.persistent_file,
                                            store_data=PersistenceInput(bot_data=False))
 
@@ -53,6 +55,9 @@ def main():
     application.add_handler(handlers.set_task)
     application.add_handler(handlers.choose_task)
     application.add_handler(handlers.top)
+    application.add_handler(handlers.chat_add)
+    application.add_handler(handlers.chat_remove)
+    application.add_handler(handlers.chat_top)
 
     application.run_polling()
 

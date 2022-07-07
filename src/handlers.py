@@ -26,10 +26,11 @@ def chat_and_bot_admins_only(func):
     @wraps(func)
     def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if update.effective_chat.type != 'private' \
-            and not is_bot_admin(update, context) \
-            and not is_chat_admin(update, context):
-                return None
+                and not is_bot_admin(update, context) \
+                and not is_chat_admin(update, context):
+            return None
         return func(update, context)
+
     return wrapper
 
 
@@ -39,6 +40,7 @@ def bot_admins_only(func):
         if not is_bot_admin(update, context):
             return None
         return func(update, context)
+
     return wrapper
 
 
@@ -57,6 +59,7 @@ async def _start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     reply_rows.append(f"/{cmd.TOP[0]} [N] - топ участников")
 
     await update.message.reply_markdown("\n".join(reply_rows))
+
 
 start = PrefixHandler(cmd.PREFIXES, cmd.HELP, _start)
 
@@ -96,16 +99,86 @@ async def _info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     info_txt = msg_formatter.format_chat_info(contest, task)
     await update.message.reply_markdown(info_txt)
 
+
 get_info = PrefixHandler(cmd.PREFIXES, cmd.INFO, _info)
 
 
-async def _top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
-    if 'contest_slug' not in  context.chat_data:
+async def _chat_add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    usernames = set(context.args)
+    if not usernames:
+        await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+
+    cups_login = context.chat_data.get('cups_login', set())
+    cups_login |= usernames
+    context.chat_data['cups_login'] = cups_login
+
+    msg_txt = msg_formatter.chat_logins(cups_login)
+    await update.message.reply_markdown(msg_txt)
+
+
+chat_add = PrefixHandler(cmd.PREFIXES, cmd.CHAT_ADD, _chat_add)
+
+
+async def _chat_remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    usernames = set(context.args)
+    if not usernames:
+        await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+
+    cups_login = context.chat_data.get('cups_login', set())
+    cups_login.difference_update(usernames)
+    context.chat_data['cups_login'] = cups_login
+
+    msg_txt = msg_formatter.chat_logins(cups_login)
+    await update.message.reply_markdown(msg_txt)
+
+
+chat_remove = PrefixHandler(cmd.PREFIXES, cmd.CHAT_REMOVE, _chat_remove)
+
+
+async def _chat_top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
+    if 'contest_slug' not in context.chat_data:
         await update.message.reply_markdown("Для чата не установлено текущее соревнование. "
                                             f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
-    if 'task_id' not in  context.chat_data:
+    if 'task_id' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не выбрана задача. "
+                                            f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    cups_login = context.chat_data.get('cups_login', set())
+    if not cups_login:
+        await update.message.reply_markdown("Для чата не добавлены CUPS логины. "
+                                            f"Команда `!{cmd.CHAT_ADD[0]}`")
+        return
+
+    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+    task = allcups.task(context.chat_data['task_id'])
+    scores = allcups.task_leaderboard(context.chat_data['task_id'])
+    scores = [s for s in scores if s['user']['login'] in cups_login]
+
+    name = f"{task['contest']['name']}: {task['name']}"
+    if short:
+        text = msg_formatter.format_top(name, scores)
+    else:
+        text = msg_formatter.format_toop(name, scores)
+    if len(text) > 4000:
+        text = text[:-3][:4000] + ".🔥..🔥🔥```"
+    await update.message.reply_markdown(text)
+
+
+chat_top = PrefixHandler(cmd.PREFIXES, cmd.CHAT_TOP, partial(_chat_top, short=True))
+chat_toop = PrefixHandler(cmd.PREFIXES, cmd.CHAT_TOOP, partial(_chat_top, short=False))
+
+async def _top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не установлено текущее соревнование. "
+                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
         await update.message.reply_markdown("Для чата не выбрана задача. "
                                             f"Команда `!{cmd.TASK[0]}`")
         return
@@ -187,8 +260,6 @@ choose_task = CallbackQueryHandler(_task_button, pattern="^task (\d+)$")
 
 
 
-
-
 #
 # @chat_admins_only
 # def _subs_list(update: Update, context: CallbackContext):
@@ -249,4 +320,5 @@ choose_task = CallbackQueryHandler(_task_button, pattern="^task (\d+)$")
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.warning('Update "%s" caused error "%s"' % (update, context.error))
-    update.message.reply_text("Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
+    update.message.reply_text(
+        "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
