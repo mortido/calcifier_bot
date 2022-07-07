@@ -58,6 +58,7 @@ def main():
     application.add_handler(handlers.chat_add)
     application.add_handler(handlers.chat_remove)
     application.add_handler(handlers.chat_top)
+    application.add_handler(handlers.pos)
 
     application.run_polling()
 
