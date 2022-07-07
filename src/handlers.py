@@ -77,7 +77,7 @@ async def _set_contest(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     context.chat_data['contest_slug'] = slug
-    del context.chat_data['task_id']
+    context.chat_data.pop('task_id', None)
     info_txt = msg_formatter.format_chat_info(contest, None)
     await update.message.reply_markdown(info_txt)
 
