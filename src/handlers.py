@@ -107,9 +107,9 @@ async def _info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if 'task_id' in context.chat_data:
             task = allcups.task(context.chat_data['task_id'])
     info_txt = msg_formatter.format_chat_info(contest, task)
-    battle_login = context.chat_data.pop('battle_login', None)
+    battle_login = context.chat_data.get('battle_login', None)
     if battle_login:
-        info_txt += f"\n\nBattle Login: `{battle_login}`"
+        info_txt += f"\nCUPS Battle Login: `{battle_login}`"
 
     await update.message.reply_markdown(info_txt)
 
@@ -358,5 +358,6 @@ unsub = PrefixHandler(cmd.PREFIXES, cmd.UNSUB_FROM, _unsub)
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.warning('Update "%s" caused error "%s"' % (update, context.error))
-    update.message.reply_text(
-        "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
+    if update:
+        update.message.reply_text(
+            "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")

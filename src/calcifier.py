@@ -2,6 +2,7 @@ import logging
 import argparse
 import json
 import os
+import asyncio
 
 from telegram import ForceReply, Update
 from telegram.ext import (Application, CommandHandler, ContextTypes, MessageHandler, filters,
@@ -36,21 +37,28 @@ def main():
     config = configuration.from_json_file(args.config_file)
     os.makedirs(os.path.dirname(config.persistent_file), exist_ok=True)
 
-    logger.info(f"Starting Calcifier bot... "
-                f"Persistent file: {config.persistent_file}")
+    logger.info(f"Starting Calcifier bot... ")
+    logger.info(f"Persistent file: {config.persistent_file}")
+    logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
 
     # Using JSON can broke some sets
-    persistent_storage = PicklePersistence(filepath=config.persistent_file,
-                                           store_data=PersistenceInput(bot_data=False))
+    persistent_storage = PicklePersistence(filepath=config.persistent_file)
 
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
+    # loop.run_until_complete(persistent_storage.update_bot_data({'bot_admins': config.bot_admins}))
 
     application = Application.builder().token(config.tg_token)\
         .persistence(persistence=persistent_storage).build()
-    application.bot_data['bot_admins'] = config.bot_admins
-    logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
+    #
+    # logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
+    # application.admins = config.bot_admins
 
     job_queue = application.job_queue
-    # notify_games_job = job_queue.run_repeating(jobs.games_notifications, interval=1, first=0.0)
+    async def set_bot_admins(c):
+        c.bot_data['bot_admins'] = config.bot_admins
+    job_queue.run_once(set_bot_admins, 0)
+    job_queue.run_repeating(jobs.games_notifications, interval=3*60, first=5)
 
     application.add_error_handler(handlers.error_handler)
     application.add_handler(handlers.start)

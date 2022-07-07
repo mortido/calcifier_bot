@@ -176,20 +176,25 @@ loose_phrases = [
     "Попробуй сменить язык",
 ]
 
-def format_game(scores):
-    win = int(game.deltas[player_idx]) > 0
-    rows = [random.choice(win_phrases if win else loose_phrases),
-            f"http://russianaicup.ru/game/view/{game.gid}",
-            "```",
-            f"{game.gtype.ljust(10)}     SCORE    Δ   LB"]
-    for i in range(len(game.scores)):
-        player_prefix = "* " if i == player_idx else ""
-        rows.append("{}{}{}{}{}".format(
-            game.places[i].ljust(3),
-            trim_len(player_prefix + game.players[i], 11).ljust(11),
-            game.scores[i].rjust(6),
-            game.deltas[i].rjust(5),
-            game.global_places[i].rjust(5)
+
+def format_game(battle, name, scores):
+    # win = int(game.deltas[player_idx]) > 0
+    # rows = [random.choice(win_phrases if win else loose_phrases),
+    #         f"http://russianaicup.ru/game/view/{game.gid}",
+    rows = ["```",
+            # f"{name.ljust(30)}     SCORE    Δ   LB"]
+            f"{name.ljust(30)}",
+            f"ID {battle['id']}",
+            "",
+            ]
+
+    for s in scores:
+        login = "* " + s['login'] if s['sub_flag'] else s['login']
+        rows.append("{}{}{}{}".format(
+            str(s['rank']).ljust(3),
+            trim_len(login, 10).ljust(11),
+            trim_len(s['language'], 7).ljust(8),
+            str(int(s['score'])).rjust(6)
         ))
     rows.append("```")
     return "\n".join(rows)
