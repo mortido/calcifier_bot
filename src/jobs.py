@@ -69,9 +69,11 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 last_id = battle_last_id.get(t['id'], None)
                 task_battles = allcups.battles(t['id'], last_id)
                 if task_battles:  # and last_id:
-                    battle_last_id[t['id']] = task_battles[0]['id']
-                    for battle in task_battles:
+                    for battle in task_battles[::-1]:
+                        if battle['id'] <= battle_last_id[t['id']]:
+                            continue
                         await _process_battle_results(battle, name, context)
+                    battle_last_id[t['id']] = task_battles[0]['id']
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context
