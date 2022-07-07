@@ -176,20 +176,20 @@ loose_phrases = [
     "Попробуй сменить язык",
 ]
 
-# def format_game(game: Game, player_idx):
-#     win = int(game.deltas[player_idx]) > 0
-#     rows = [random.choice(win_phrases if win else loose_phrases),
-#             f"http://russianaicup.ru/game/view/{game.gid}",
-#             "```",
-#             f"{game.gtype.ljust(10)}     SCORE    Δ   LB"]
-#     for i in range(len(game.scores)):
-#         player_prefix = "* " if i == player_idx else ""
-#         rows.append("{}{}{}{}{}".format(
-#             game.places[i].ljust(3),
-#             trim_len(player_prefix + game.players[i], 11).ljust(11),
-#             game.scores[i].rjust(6),
-#             game.deltas[i].rjust(5),
-#             game.global_places[i].rjust(5)
-#         ))
-#     rows.append("```")
-#     return "\n".join(rows)
+def format_game(scores):
+    win = int(game.deltas[player_idx]) > 0
+    rows = [random.choice(win_phrases if win else loose_phrases),
+            f"http://russianaicup.ru/game/view/{game.gid}",
+            "```",
+            f"{game.gtype.ljust(10)}     SCORE    Δ   LB"]
+    for i in range(len(game.scores)):
+        player_prefix = "* " if i == player_idx else ""
+        rows.append("{}{}{}{}{}".format(
+            game.places[i].ljust(3),
+            trim_len(player_prefix + game.players[i], 11).ljust(11),
+            game.scores[i].rjust(6),
+            game.deltas[i].rjust(5),
+            game.global_places[i].rjust(5)
+        ))
+    rows.append("```")
+    return "\n".join(rows)

@@ -10,6 +10,7 @@ from telegram.ext import (Application, CommandHandler, ContextTypes, MessageHand
 import allcups
 import configuration
 import handlers
+import jobs
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -48,6 +49,9 @@ def main():
     application.bot_data['bot_admins'] = config.bot_admins
     logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
 
+    job_queue = application.job_queue
+    # notify_games_job = job_queue.run_repeating(jobs.games_notifications, interval=1, first=0.0)
+
     application.add_error_handler(handlers.error_handler)
     application.add_handler(handlers.start)
     application.add_handler(handlers.get_info)
@@ -59,6 +63,8 @@ def main():
     application.add_handler(handlers.chat_remove)
     application.add_handler(handlers.chat_top)
     application.add_handler(handlers.pos)
+    application.add_handler(handlers.sub)
+    application.add_handler(handlers.unsub)
 
     application.run_polling()
 

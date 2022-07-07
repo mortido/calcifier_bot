@@ -22,6 +22,16 @@ def is_bot_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     return update.effective_user.username in context.bot_data['bot_admins']
 
 
+def private_chat_only(func):
+    @wraps(func)
+    def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if update.effective_chat.type != 'private':
+            return None
+        return func(update, context)
+
+    return wrapper
+
+
 def chat_and_bot_admins_only(func):
     @wraps(func)
     def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -97,6 +107,10 @@ async def _info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if 'task_id' in context.chat_data:
             task = allcups.task(context.chat_data['task_id'])
     info_txt = msg_formatter.format_chat_info(contest, task)
+    battle_login = context.chat_data.pop('battle_login', None)
+    if battle_login:
+        info_txt += f"\n\nBattle Login: `{battle_login}`"
+
     await update.message.reply_markdown(info_txt)
 
 
@@ -109,11 +123,11 @@ async def _chat_add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
         return
 
-    cups_login = context.chat_data.get('cups_login', set())
-    cups_login |= usernames
-    context.chat_data['cups_login'] = cups_login
+    cups_logins = context.chat_data.get('cups_logins', set())
+    cups_logins |= usernames
+    context.chat_data['cups_logins'] = cups_logins
 
-    msg_txt = msg_formatter.chat_logins(cups_login)
+    msg_txt = msg_formatter.chat_logins(cups_logins)
     await update.message.reply_markdown(msg_txt)
 
 
@@ -126,11 +140,11 @@ async def _chat_remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
         return
 
-    cups_login = context.chat_data.get('cups_login', set())
-    cups_login.difference_update(usernames)
-    context.chat_data['cups_login'] = cups_login
+    cups_logins = context.chat_data.get('cups_logins', set())
+    cups_logins.difference_update(usernames)
+    context.chat_data['cups_logins'] = cups_logins
 
-    msg_txt = msg_formatter.chat_logins(cups_login)
+    msg_txt = msg_formatter.chat_logins(cups_logins)
     await update.message.reply_markdown(msg_txt)
 
 
@@ -148,8 +162,8 @@ async def _chat_top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: b
                                             f"Команда `!{cmd.TASK[0]}`")
         return
 
-    cups_login = context.chat_data.get('cups_login', set())
-    if not cups_login:
+    cups_logins = context.chat_data.get('cups_logins', set())
+    if not cups_logins:
         await update.message.reply_markdown("Для чата не добавлены CUPS л🔥гины. "
                                             f"Команда `!{cmd.CHAT_ADD[0]}`")
         return
@@ -157,7 +171,7 @@ async def _chat_top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: b
     await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
     task = allcups.task(context.chat_data['task_id'])
     scores = allcups.task_leaderboard(context.chat_data['task_id'])
-    scores = [s for s in scores if s['user']['login'] in cups_login]
+    scores = [s for s in scores if s['user']['login'] in cups_logins]
 
     name = f"{task['contest']['name']}: {task['name']}"
     if short:
@@ -305,64 +319,41 @@ set_task = PrefixHandler(cmd.PREFIXES, cmd.TASK, _task)
 choose_task = CallbackQueryHandler(_task_button, pattern="^task (\d+)$")
 
 
+@private_chat_only
+async def _sub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.args:
+        await update.message.reply_text("Укажи cups л🔥гин")
+        return
+    if len(context.args) > 1:
+        await update.message.reply_text("Подписаться можно только на 1 cups л🔥гин")
+        return
+    login = context.args[0]
+    context.chat_data['battle_login'] = login
+    battle_subs = context.bot_data.get('battle_subs', dict())
+    context.bot_data['battle_subs'] = battle_subs
+    chats = battle_subs.get('battle_subs', set())
+    battle_subs[login] = chats
+    chats.add(update.effective_chat.id)
+
+    await update.message.reply_markdown(f"Подписка на системные игры `{login}` установлена")
 
 
-#
-# @chat_admins_only
-# def _subs_list(update: Update, context: CallbackContext):
-#     chat_id = update.message.chat_id
-#     subs = context.bot.subscriber.get_subs_by_chat(chat_id)
-#     if not subs:
-#         update.message.reply_text("Нет активных подписок")
-#     else:
-#         reply_rows = ["Ваши подписки:"]
-#         reply_rows.append("```")
-#         for s in subs:
-#             reply_rows.append(str(s))
-#
-#         reply_rows.append("```")
-#         update.message.reply_text("\n".join(reply_rows), parse_mode=ParseMode.MARKDOWN)
-#
-#
-# subs_list = PrefixHandler(cmd.PREFIXES, cmd.SUBS, _subs_list)
-#
-#
-#
-#
-#
-#
-# def _pos(update: Update, context: CallbackContext, short=True):
-#     chat_settings = context.bot.chat_settings.get_settings(update.message.chat_id)
-#     if chat_settings.current_cup == CupType.AI:
-#         return ai_handlers.pos_callback(update, context, short)
-#     if chat_settings.current_cup == CupType.ML:
-#         return ml_handlers.pos_callback(update, context, short)
-#     update.message.reply_text("🔥❓")
-#
-#
-# pos = PrefixHandler(cmd.PREFIXES, cmd.POS, partial(_pos, short=True))
-# poos = PrefixHandler(cmd.PREFIXES, cmd.POOS, partial(_pos, short=False))
-#
-#
-# async def _top(update: Update, context: CallbackContext, short=True):
-#     chat_settings = context.bot.chat_settings.get_settings(update.message.chat_id)
-#     if chat_settings.current_cup == CupType.AI:
-#         return ai_handlers.top_callback(update, context, short)
-#     if chat_settings.current_cup == CupType.ML:
-#         return ml_handlers.top_callback(update, context, short)
-#     await update.message.reply_text("🔥❓")
-#
-#
-# top = PrefixHandler(cmd.PREFIXES, cmd.TOP, partial(_top, short=True))
-# toop = PrefixHandler(cmd.PREFIXES, cmd.TOOP, partial(_top, short=False))
-#
-#
-# @chat_admins_only
-# def _config(update: Update, context: CallbackContext):
-#     update.message.reply_text("🔥")
-#
-#
-# configure = PrefixHandler(cmd.CONFIG, cmd.TOP, _top)
+sub = PrefixHandler(cmd.PREFIXES, cmd.SUB_TO, _sub)
+
+
+@private_chat_only
+async def _unsub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    login = context.chat_data.pop('battle_login', None)
+    if login:
+        battle_subs = context.bot_data.get('battle_subs', dict())
+        context.bot_data['battle_subs'] = battle_subs
+        chats = battle_subs.get('battle_subs', set())
+        battle_subs[login] = chats
+        chats.discard(update.effective_chat.id)
+    await update.message.reply_text("Подписка на системные игры отключена")
+
+
+unsub = PrefixHandler(cmd.PREFIXES, cmd.UNSUB_FROM, _unsub)
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
