@@ -5,7 +5,7 @@ import os
 
 from telegram import ForceReply, Update
 from telegram.ext import (Application, CommandHandler, ContextTypes, MessageHandler, filters,
-                          PicklePersistence)
+                          PicklePersistence, PersistenceInput)
 
 import allcups
 import configuration
@@ -37,15 +37,21 @@ def main():
 
     logger.info(f"Starting Calcifier bot... "
                 f"Persistent file: {config.persistent_file}")
-    persistent_storage = PicklePersistence(filepath=config.persistent_file)
+    persistent_storage = PicklePersistence(filepath=config.persistent_file,
+                                           store_data=PersistenceInput(bot_data=False))
 
 
     application = Application.builder().token(config.tg_token)\
         .persistence(persistence=persistent_storage).build()
+    application.bot_data['bot_admins'] = config.bot_admins
+    logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
 
     application.add_error_handler(handlers.error_handler)
     application.add_handler(handlers.start)
+    application.add_handler(handlers.get_info)
     application.add_handler(handlers.set_contest)
+    application.add_handler(handlers.set_task)
+    application.add_handler(handlers.choose_task)
     application.add_handler(handlers.top)
 
     application.run_polling()

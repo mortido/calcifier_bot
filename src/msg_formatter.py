@@ -1,24 +1,26 @@
+from datetime import datetime, timezone
+
 
 def trim_len(string, max_len):
     return string if len(string) <= max_len else string[:max_len - 1] + "…"
 
 
-def format_toop(chart_name, players):
-    rows = ["```"]
-    rows.append(chart_name.upper())
-    rows.append("")
-    rows.append("    PLAYER          LANGUAGE  W.R. SCORE")
-    rows.append("----------------------------------------")
-    for i, player in enumerate(players):
-        rows.append("{}{}{}{}{}".format(
-            str(i + 1).ljust(4),
-            trim_len(player.username, 16).ljust(16),
-            player.language.ljust(9),
-            player.winrate.rjust(5),
-            player.score.rjust(6)
-        ))
-    rows.append("```")
-    return "\n".join(rows)
+# def format_toop(chart_name, players):
+#     rows = ["```"]
+#     rows.append(chart_name.upper())
+#     rows.append("")
+#     rows.append("    PLAYER          LANGUAGE  W.R. SCORE")
+#     rows.append("----------------------------------------")
+#     for i, player in enumerate(players):
+#         rows.append("{}{}{}{}{}".format(
+#             str(i + 1).ljust(4),
+#             trim_len(player.username, 16).ljust(16),
+#             player.language.ljust(9),
+#             player.winrate.rjust(5),
+#             player.score.rjust(6)
+#         ))
+#     rows.append("```")
+#     return "\n".join(rows)
 
 
 def format_top(chart_name, scores):
@@ -37,18 +39,18 @@ def format_top(chart_name, scores):
     return "\n".join(rows)
 
 
-def format_poos(chart_name, players):
-    rows = ["```"]
-    for i, player in players:
-        rows.append("{}{}{}{}{}".format(
-            str(i + 1).ljust(4),
-            trim_len(player.username, 16).ljust(16),
-            player.language.ljust(9),
-            player.winrate.rjust(5),
-            player.score.rjust(6)
-        ))
-    rows.append("```")
-    return "\n".join(rows)
+# def format_poos(chart_name, players):
+#     rows = ["```"]
+#     for i, player in players:
+#         rows.append("{}{}{}{}{}".format(
+#             str(i + 1).ljust(4),
+#             trim_len(player.username, 16).ljust(16),
+#             player.language.ljust(9),
+#             player.winrate.rjust(5),
+#             player.score.rjust(6)
+#         ))
+#     rows.append("```")
+#     return "\n".join(rows)
 
 
 def format_pos(chart_name, players):
@@ -61,6 +63,51 @@ def format_pos(chart_name, players):
         ))
     rows.append("```")
     return "\n".join(rows)
+
+
+def td2s(td):
+    return str(td).split(".")[0]
+
+
+def format_chat_info(contest=None, task=None) -> str:
+    lines = ['```']
+    if contest:
+        lines.append(f"Соревнование: {contest['name']}")
+
+        now = datetime.now(timezone.utc)
+        start_date = datetime.fromisoformat(contest['start_date'])
+        end_date = datetime.fromisoformat(contest['finish_date'])
+        if start_date > now:
+            lines.append(f"Начнется через: {td2s(start_date - now)}")
+        elif end_date > now:
+            lines.append(f"Закончится через: {td2s(end_date - now)}")
+        else:
+            lines.append("Соревнование закончилось.")
+
+        lines.append("")
+        cround = None
+        for r in contest['round_set']:
+            start_date = datetime.fromisoformat(r['start_date'])
+            end_date = datetime.fromisoformat(r['finish_date'])
+            if end_date > now:
+                cround = r
+                break
+        if cround:
+            lines.append(f"Раунд: {cround['name']}")
+            if start_date > now:
+                lines.append(f"Начнется через: {td2s(start_date - now)}")
+            else:
+                lines.append(f"Закончится через: {td2s(end_date - now)}")
+            lines.append("")
+
+        if task:
+            lines.append(f"Задача: {task['name']}")
+        else:
+            lines.append(f"Задача: НЕ ВЫБРАНА, ЛИДЕРБОРД НЕДОСТУПЕН")
+    else:
+        lines.append("Соревнование: НЕ ВЫБРАНО")
+    lines.append('```')
+    return '\n'.join(lines)
 
 
 import random
@@ -119,7 +166,6 @@ loose_phrases = [
     "Хм... посмотришь, почему так вышло?",
     "Попробуй сменить язык",
 ]
-
 
 # def format_game(game: Game, player_idx):
 #     win = int(game.deltas[player_idx]) > 0

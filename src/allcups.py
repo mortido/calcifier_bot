@@ -32,16 +32,31 @@ def contests(track=None):
 def contest_navigation(slug):
     url = ALLCUPS_API_URL + f"contests/{slug}/navigation"
     response = requests.get(url)
+    if response.status_code != 200:
+        return None
     return response.json()
 
-def contest_short(slug):
-    url = ALLCUPS_API_URL + f"contests/{slug}/short"
+def contest(slug):
+    url = ALLCUPS_API_URL + f"contests/{slug}"
     response = requests.get(url)
+    if response.status_code != 200:
+        return None
     return response.json()
+
 
 def round(id):
     url = ALLCUPS_API_URL + f"round/{id}"
     response = requests.get(url)
+    if response.status_code != 200:
+        return None
+    return response.json()
+
+
+def task(id):
+    url = ALLCUPS_API_URL + f"task/{id}"
+    response = requests.get(url)
+    if response.status_code != 200:
+        return None
     return response.json()
 
 # TASK LEADER BOARD
