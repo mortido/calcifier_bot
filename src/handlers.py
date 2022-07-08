@@ -486,8 +486,8 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             plot_data.append(point)
             dates.append(datetime.fromtimestamp(h['ts'], timezone.utc))
 
-        # plt.step(dates, plot_data, where='mid', label=login)
-        plt.plot(dates, plot_data, label=login)
+        plt.step(dates, plot_data, where='mid', label=login)
+        # plt.plot(dates, plot_data, label=login)
 
     plt.grid(color='0.95')
     plt.legend(fontsize=16)
