@@ -1,7 +1,10 @@
 from functools import wraps, partial
 import logging
 import urllib
+from io import BytesIO
+from datetime import datetime, timezone, timedelta
 
+import matplotlib.pyplot as plt
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ChatAction
 from telegram.ext import PrefixHandler, ContextTypes, CallbackQueryHandler
@@ -404,7 +407,8 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     cups_login = context.args[0]
 
     await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
-    task_battle = allcups.battles(context.chat_data['task_id'], None)[0]  # TODO: fix case with no battles
+    task_battle = allcups.battles(context.chat_data['task_id'], None)[
+        0]  # TODO: fix case with no battles
 
     replay_url = "https://cups.online" + task_battle['visualizer_url'] + "?"
     for _ in range(10):
@@ -418,6 +422,82 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 game = PrefixHandler(cmd.PREFIXES, cmd.GAME, _game)
+
+
+async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
+                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не в🔥брана задача. "
+                                            f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    cups_logins = set(l.lower() for l in context.args)
+    if not cups_logins:
+        await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+
+    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+
+    task = allcups.task(context.chat_data['task_id'])
+
+    # context.bot_data.pop('history', None)
+    history = context.bot_data.get('history', {})
+    context.bot_data['history'] = history
+    task_history = history.get(context.chat_data['task_id'], [])
+    history[context.chat_data['task_id']] = task_history
+
+    ts = datetime.fromisoformat(task['start_date'])
+    time_step = timedelta(minutes=15)
+    now = datetime.now(timezone.utc) + time_step
+    if task_history:
+        ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc) + time_step
+
+    while ts < now:
+        scores = allcups.task_leaderboard(context.chat_data['task_id'], ts)
+        lb = [{'rank': s['rank'], 'login': s['user']['login'], 'score': s['score']} for s in scores]
+        task_history.append({
+            'ts': ts.timestamp(),
+            'leaderboard': lb
+        })
+        ts += time_step
+
+    plt.clf()
+    fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+
+    # ax.tick_params(axis='x', rotation=0, labelsize=12)
+    ax.tick_params(axis='y', rotation=0, labelsize=12, labelcolor='tab:red')
+    ax.grid(alpha=.9)
+    for login in cups_logins:
+        plot_data = []
+        dates = []
+        for h in task_history:
+            point = None
+            for s in h['leaderboard']:
+                if s['login'].lower() == login:
+                    point = s['score']
+                    break
+            plot_data.append(point)
+            dates.append(datetime.fromtimestamp(h['ts'], timezone.utc))
+
+        plt.step(dates, plot_data, where='mid', alpha=0.3, label=login)
+
+    plt.grid(color='0.95')
+    plt.legend(fontsize=12)
+
+    plot_file = BytesIO()
+    fig.tight_layout()
+    fig.savefig(plot_file, format='png')
+    plt.clf()
+    plot_file.seek(0)
+
+    await update.message.reply_photo(plot_file, caption="🔥")
+
+
+plot = PrefixHandler(cmd.PREFIXES, cmd.PLOT, _plot)
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

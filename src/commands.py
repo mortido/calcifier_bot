@@ -1,6 +1,8 @@
 PREFIXES = ["/", "!"]
 
 GAME = ["game", "игра", "пфьу"]
+PLOT = ["plot", "здще"]
+
 SOLUTION_LIST = ["sol", "solutions"]
 CONTEST = ["contest", "сщтеуые"]
 TASK = ["task", "ефыл"]

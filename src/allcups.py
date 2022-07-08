@@ -1,6 +1,6 @@
 import requests
 import cachetools.func
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 ALLCUPS_API_URL = "https://cups.online/api_v2/"
 
@@ -96,14 +96,19 @@ def battles(task_id=None):  #, last_battle_id=None):
 # https://cups.online/api_v2/task/1058/leaderboard/?page_size=108
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
-def task_leaderboard(task_id):
+def task_leaderboard(task_id, date=None):
     url = ALLCUPS_API_URL + f"task/{task_id}/leaderboard"
+    if date is None:
+        date = datetime.now(timezone.utc)
+    else:
+        date -= timedelta(days=1)
     params = {
         "page_size": 108,
-        "date": datetime.now(timezone.utc).isoformat()
+        "date": date.isoformat()
     }
     return _get_all_pages(url, params=params)
 
+#https://cups.online/api_v2/task/1314/users_search/?page_size=120
 
 # @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 # def task_solutions(task_id, login):
