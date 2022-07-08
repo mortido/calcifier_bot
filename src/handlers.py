@@ -1,5 +1,6 @@
 from functools import wraps, partial
 import logging
+import urllib
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ChatAction
@@ -8,6 +9,7 @@ from telegram.ext import PrefixHandler, ContextTypes, CallbackQueryHandler
 import commands as cmd
 import msg_formatter
 import allcups
+import names
 
 logger = logging.getLogger(__name__)
 
@@ -354,6 +356,68 @@ async def _unsub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 unsub = PrefixHandler(cmd.PREFIXES, cmd.UNSUB_FROM, _unsub)
+
+
+# async def _sol(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+#     if 'contest_slug' not in context.chat_data:
+#         await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
+#                                             f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+#         return
+#
+#     if 'task_id' not in context.chat_data:
+#         await update.message.reply_markdown("Для чата не в🔥брана задача. "
+#                                             f"Команда `!{cmd.TASK[0]}`")
+#         return
+#
+#     if not context.args:
+#         await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+#         return
+#
+#     cups_login = context.args[0]
+#
+#     await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+#     solutions = allcups.task_solutions(context.chat_data['task_id'], cups_login)[:10]
+#     text = msg_formatter.format_solutions(solutions)
+#     if len(text) > 4000:
+#         text = text[:-3][:4000] + ".🔥..🔥🔥```"
+#     await update.message.reply_markdown(text)
+#
+#
+# solution_list = PrefixHandler(cmd.PREFIXES, cmd.SOLUTION_LIST, _sol)
+
+
+async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
+                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не в🔥брана задача. "
+                                            f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Ст🔥ит  указ🔥ть  ID  игры")
+        return
+
+    cups_login = context.args[0]
+
+    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+    task_battle = allcups.battles(context.chat_data['task_id'], None)[0]  # TODO: fix case with no battles
+
+    replay_url = "https://cups.online" + task_battle['visualizer_url'] + "?"
+    for _ in range(10):
+        replay_url += f"&player-names=" + urllib.parse.quote(names.get_name())
+    #     replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution']['external_id']))
+    replay_url += f"&replay=%2Fapi_v2%2Fbattles%2F{context.args[0]}%2Fget_result_file%2F"
+    reply_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton(text='Watch Replay', url=replay_url)]
+    ])
+    await update.message.reply_markdown("🔥", reply_markup=reply_markup)
+
+
+game = PrefixHandler(cmd.PREFIXES, cmd.GAME, _game)
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

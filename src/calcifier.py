@@ -58,7 +58,7 @@ def main():
     async def set_bot_admins(c):
         c.bot_data['bot_admins'] = config.bot_admins
     job_queue.run_once(set_bot_admins, 0)
-    job_queue.run_repeating(jobs.games_notifications, interval=3*60, first=5)
+    # job_queue.run_repeating(jobs.games_notifications, interval=3*60, first=5)
 
     application.add_error_handler(handlers.error_handler)
     application.add_handler(handlers.start)
@@ -73,6 +73,7 @@ def main():
     application.add_handler(handlers.pos)
     application.add_handler(handlers.sub)
     application.add_handler(handlers.unsub)
+    application.add_handler(handlers.game)
 
     application.run_polling()
 

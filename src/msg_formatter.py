@@ -63,16 +63,29 @@ def chat_logins(logins):
     return msg
 
 
-def format_pos(chart_name, players):
-    rows = ["```"]
-    for i, player in players:
-        rows.append("{}{}{}".format(
-            str(i + 1).ljust(4),
-            trim_len(player.username, 11).ljust(11),
-            player.score.rjust(5)
-        ))
-    rows.append("```")
-    return "\n".join(rows)
+# def format_pos(chart_name, players):
+#     rows = ["```"]
+#     for i, player in players:
+#         rows.append("{}{}{}".format(
+#             str(i + 1).ljust(4),
+#             trim_len(player.username, 11).ljust(11),
+#             player.score.rjust(5)
+#         ))
+#     rows.append("```")
+#     return "\n".join(rows)
+
+
+# def format_solutions(solutions):
+#     rows = ["```"]
+#     for sol in solutions:
+#         t=0
+#         # rows.append("{}{}{}".format(
+#         #     str(i + 1).ljust(4),
+#         #     trim_len(player.username, 11).ljust(11),
+#         #     player.score.rjust(5)
+#         # ))
+#     rows.append("```")
+#     return "\n".join(rows)
 
 
 def td2s(td):

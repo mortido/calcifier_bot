@@ -99,3 +99,17 @@ def task_leaderboard(task_id):
         "date": datetime.now(timezone.utc).isoformat()
     }
     return _get_all_pages(url, params=params)
+
+
+# @cachetools.func.ttl_cache(maxsize=128, ttl=10)
+# def task_solutions(task_id, login):
+#     url = ALLCUPS_API_URL + f"task/{task_id}/solutions_search"
+#     params = {
+#         "page_size": 120,
+#         "login": login
+#     }
+#     cookies = {'csrftoken': '-',
+#                'sessionid': '-'}
+#     # return _get_all_pages(url, params=params)
+#     response = requests.get(url, params=params, cookies=cookies)
+#     return response.json()['results']
