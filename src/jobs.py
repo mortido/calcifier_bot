@@ -53,8 +53,12 @@ async def _process_battle_results(battle, name, context: ContextTypes.DEFAULT_TY
 async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
     battles = allcups.battles()
     now = datetime.now(timezone.utc)
-    battle_last_id = context.bot_data.get('battle_last_id', dict())
-    context.bot_data['battle_last_id'] = battle_last_id
+
+    sent_battle_ids = context.bot_data.get('sent_battle_ids', dict())
+    context.bot_data['sent_battle_ids'] = sent_battle_ids
+    # battle_last_id = context.bot_data.get('battle_last_id', dict())
+    # context.bot_data['battle_last_id'] = battle_last_id
+    context.bot_data.pop('battle_last_id', None)
     for b in battles:
         end_date = datetime.fromisoformat(b['finish_date'])
         if now > end_date:
@@ -66,14 +70,14 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 continue
             for t in r['tasks']:
                 name = f"{b['name']}: {r['name']}: {t['name']}"
-                last_id = battle_last_id.get(t['id'], None)
-                task_battles = allcups.battles(t['id'], last_id)
-                if task_battles:  # and last_id:
-                    for battle in task_battles[::-1]:
-                        if battle['id'] <= battle_last_id[t['id']]:
-                            continue
-                        await _process_battle_results(battle, name, context)
-                    battle_last_id[t['id']] = task_battles[0]['id']
+                sent_ids = sent_battle_ids.get(t['id'], set())
+                sent_battle_ids[t['id']] = sent_ids
+                task_battles = allcups.battles(t['id'])
+                for battle in task_battles[::-1]:
+                    if battle['id'] in sent_ids:
+                        continue
+                    await _process_battle_results(battle, name, context)
+                    sent_ids.add(battle['id'])
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context

@@ -68,17 +68,21 @@ def task(id):
 
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
-def battles(task_id=None, last_battle_id=None):
+def battles(task_id=None):  #, last_battle_id=None):
     url = ALLCUPS_API_URL
     if task_id:
         url += f"battles/task/{task_id}"
         params = {"page_size": 540}
         response = requests.get(url, params=params)
+        json_response = response.json()
         results = response.json()['results']
-        while last_battle_id and results[-1]['id'] > (last_battle_id + 1) and json_response['next']:
-            response = requests.get(json_response['next'])
-            json_response = response.json()
-            result = result + json_response['results']
+        # while last_battle_id and results[-1]['id'] > (last_battle_id + 1) and json_response['next'] and len(results) < max_count:
+        #     response = requests.get(json_response['next'])
+        #     json_response = response.json()
+        #     results = results + json_response['results']
+
+
+
         return results
         # return _get_all_pages(url, params=params)
     else:
