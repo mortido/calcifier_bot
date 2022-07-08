@@ -4,6 +4,7 @@ import urllib
 from io import BytesIO
 from datetime import datetime, timezone, timedelta
 
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ChatAction
@@ -466,10 +467,12 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         ts += time_step
 
     plt.clf()
-    fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+    fig, ax = plt.subplots(1, 1, figsize=(15, 7))
 
     # ax.tick_params(axis='x', rotation=0, labelsize=12)
     ax.tick_params(axis='y', rotation=0, labelsize=12, labelcolor='tab:red')
+    myFmt = mdates.DateFormatter('%b %d %H:%M')
+    ax.xaxis.set_major_formatter(myFmt)
     ax.grid(alpha=.9)
     for login in cups_logins:
         plot_data = []
@@ -483,10 +486,11 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             plot_data.append(point)
             dates.append(datetime.fromtimestamp(h['ts'], timezone.utc))
 
-        plt.step(dates, plot_data, where='mid', alpha=0.3, label=login)
+        # plt.step(dates, plot_data, where='mid', label=login)
+        plt.plot(dates, plot_data, label=login)
 
     plt.grid(color='0.95')
-    plt.legend(fontsize=12)
+    plt.legend(fontsize=16)
 
     plot_file = BytesIO()
     fig.tight_layout()
