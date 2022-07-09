@@ -73,7 +73,6 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
             for t in r['tasks']:
                 name = f"{b['name']}: {r['name']}: {t['name']}"
                 sent_ids = sent_battle_ids.get(t['id'], set())
-                sent_battle_ids[t['id']] = sent_ids
                 task_battles = allcups.battles(t['id'])
 
                 if not task_battles:
@@ -92,6 +91,8 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                         continue
                     await _process_battle_results(battle, name, lb_scores, context)
                     sent_ids.add(battle['id'])
+
+                sent_battle_ids[t['id']] = set(sorted(sent_ids, reverse=True)[:5000])
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context
