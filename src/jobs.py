@@ -12,7 +12,7 @@ import msg_formatter
 logger = logging.getLogger(__name__)
 
 
-async def _process_battle_results(battle, name, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _process_battle_results(battle, name, lb_scores, context: ContextTypes.DEFAULT_TYPE) -> None:
     battle_subs = context.bot_data.get('battle_subs', dict())
     logins = [r['user']['login'] for r in battle['battle_results']]
     for login in logins:
@@ -29,9 +29,11 @@ async def _process_battle_results(battle, name, context: ContextTypes.DEFAULT_TY
                 'score': r['score'],
                 'id': r['solution']['id'],
                 'language': r['solution']['language']['name'],
+                'lb_score': lb_scores[r['user']['login']]['score'],
+                'lb_rank': lb_scores[r['user']['login']]['rank'],
             })
 
-        msg_txt = msg_formatter.format_game(battle, name, scores)
+        msg_txt = msg_formatter.format_game(battle, name, scores, lb_scores[login])
 
         replay_url = "https://cups.online" + battle['visualizer_url'] + "?"
         for br in battle['battle_results']:
@@ -73,10 +75,22 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 sent_ids = sent_battle_ids.get(t['id'], set())
                 sent_battle_ids[t['id']] = sent_ids
                 task_battles = allcups.battles(t['id'])
+
+                if not task_battles:
+                    continue
+
+                scores = allcups.task_leaderboard(t['id'])
+                lb_scores = {}
+                for s in scores:
+                    lb_scores[s['user']['login']] = {
+                        'rank': s['rank'],
+                        'score': s['score'],
+                    }
+
                 for battle in task_battles[::-1]:
                     if battle['id'] in sent_ids:
                         continue
-                    await _process_battle_results(battle, name, context)
+                    await _process_battle_results(battle, name, lb_scores, context)
                     sent_ids.add(battle['id'])
 
 # def notify_about_new_games(context: CallbackContext):
