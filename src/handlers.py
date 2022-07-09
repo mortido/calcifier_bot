@@ -408,8 +408,7 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     cups_login = context.args[0]
 
     await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
-    task_battle = allcups.battles(context.chat_data['task_id'], None)[
-        0]  # TODO: fix case with no battles
+    task_battle = allcups.battles(context.chat_data['task_id'])[0]  # TODO: fix case with no battles
 
     replay_url = "https://cups.online" + task_battle['visualizer_url'] + "?"
     for _ in range(10):
