@@ -424,24 +424,7 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 game = PrefixHandler(cmd.PREFIXES, cmd.GAME, _game)
 
 
-async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if 'contest_slug' not in context.chat_data:
-        await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
-        return
-
-    if 'task_id' not in context.chat_data:
-        await update.message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
-        return
-
-    cups_logins = set(l.lower() for l in context.args)
-    if not cups_logins:
-        await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
-        return
-
-    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
-
+async def _plot_logins(cups_logins, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     task = allcups.task(context.chat_data['task_id'])
 
     # context.bot_data.pop('history', None)
@@ -500,7 +483,64 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_photo(plot_file, caption="🔥")
 
 
+async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
+                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не в🔥брана задача. "
+                                            f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    cups_logins = set(l.lower() for l in context.args)
+    if not cups_logins:
+        await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+
+    await _plot_logins(cups_logins, update, context)
+
+
 plot = PrefixHandler(cmd.PREFIXES, cmd.PLOT, _plot)
+
+
+async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
+                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
+        await update.message.reply_markdown("Для чата не в🔥брана задача. "
+                                            f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
+
+    n = 10
+    if context.args:
+        try:
+            n = int(context.args[0])
+        except ValueError:
+            logger.warning(f"Couldn't parse N for plot_top callback: {context.args[0]}")
+            await update.message.reply_text("Ты меня ог🔥рчаешь")
+            return
+        if n == 0:
+            await update.message.reply_text("C🔥mmandos")
+            return
+        if n < 0:
+            await update.message.reply_text("Не н🔥до так")
+            return
+
+    task = allcups.task(context.chat_data['task_id'])
+    scores = allcups.task_leaderboard(context.chat_data['task_id'])[:n]
+    logins = [s['user']['login'] for s in scores]
+
+    await _plot_logins(logins, update, context)
+
+plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

@@ -2,6 +2,7 @@ PREFIXES = ["/", "!"]
 
 GAME = ["game", "игра", "пфьу"]
 PLOT = ["plot", "здще"]
+PLOT_TOP = ["plot_top", "здще_ещз"]
 
 SOLUTION_LIST = ["sol", "solutions"]
 CONTEST = ["contest", "сщтеуые"]

@@ -76,6 +76,7 @@ def main():
     application.add_handler(handlers.unsub)
     application.add_handler(handlers.game)
     application.add_handler(handlers.plot)
+    application.add_handler(handlers.plot_top)
 
     application.run_polling()
 
