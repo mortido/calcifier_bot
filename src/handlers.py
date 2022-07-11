@@ -462,7 +462,7 @@ async def _plot_logins(cups_logins, update: Update, context: ContextTypes.DEFAUL
         for h in task_history:
             point = None
             for s in h['leaderboard']:
-                if s['login'].lower() == login:
+                if s['login'].lower() == login.lower():
                     point = s['score']
                     break
             plot_data.append(point)
@@ -494,7 +494,7 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                                             f"Команда `!{cmd.TASK[0]}`")
         return
 
-    cups_logins = set(l.lower() for l in context.args)
+    cups_logins = set(l for l in context.args)
     if not cups_logins:
         await update.message.reply_text("Ст🔥ит  указ🔥ть  ник")
         return
