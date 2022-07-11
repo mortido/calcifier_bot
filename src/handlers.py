@@ -550,8 +550,8 @@ plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
 plotl_top = PrefixHandler(cmd.PREFIXES, cmd.PLOTL_TOP, partial(_plot_top, plot_type="lines"))
 
 
-def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.warning('Update "%s" caused error "%s"' % (update, context.error))
     if update:
-        update.message.reply_text(
+        await update.message.reply_text(
             "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
