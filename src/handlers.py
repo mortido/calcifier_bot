@@ -424,7 +424,10 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 game = PrefixHandler(cmd.PREFIXES, cmd.GAME, _game)
 
 
-async def _plot_logins(cups_logins, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _plot_logins(cups_logins,
+                       update: Update,
+                       context: ContextTypes.DEFAULT_TYPE,
+                       plot_type='step') -> None:
     task = allcups.task(context.chat_data['task_id'])
 
     # context.bot_data.pop('history', None)
@@ -468,8 +471,10 @@ async def _plot_logins(cups_logins, update: Update, context: ContextTypes.DEFAUL
             plot_data.append(point)
             dates.append(datetime.fromtimestamp(h['ts'], timezone.utc))
 
-        plt.step(dates, plot_data, where='mid', label=login)
-        # plt.plot(dates, plot_data, label=login)
+        if plot_type == 'lines':
+            plt.plot(dates, plot_data, label=login)
+        else:
+            plt.step(dates, plot_data, where='mid', label=login)
 
     plt.grid(color='0.95')
     plt.legend(fontsize=16)
@@ -483,7 +488,7 @@ async def _plot_logins(cups_logins, update: Update, context: ContextTypes.DEFAUL
     await update.message.reply_photo(plot_file, caption="🔥")
 
 
-async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='step') -> None:
     if 'contest_slug' not in context.chat_data:
         await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
                                             f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
@@ -500,13 +505,14 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     await context.bot.send_chat_action(chat_id=update.message.chat_id, action=ChatAction.TYPING)
 
-    await _plot_logins(cups_logins, update, context)
+    await _plot_logins(cups_logins, update, context, plot_type=plot_type)
 
 
 plot = PrefixHandler(cmd.PREFIXES, cmd.PLOT, _plot)
+plotl = PrefixHandler(cmd.PREFIXES, cmd.PLOTL, partial(_plot, plot_type="lines"))
 
 
-async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='step') -> None:
     if 'contest_slug' not in context.chat_data:
         await update.message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
                                             f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
@@ -538,9 +544,10 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     scores = allcups.task_leaderboard(context.chat_data['task_id'])[:n]
     logins = [s['user']['login'] for s in scores]
 
-    await _plot_logins(logins, update, context)
+    await _plot_logins(logins, update, context, plot_type=plot_type)
 
 plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
+plotl_top = PrefixHandler(cmd.PREFIXES, cmd.PLOTL_TOP, partial(_plot_top, plot_type="lines"))
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
