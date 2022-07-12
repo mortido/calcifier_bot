@@ -23,7 +23,9 @@ def trim_len(string, max_len):
 #     return "\n".join(rows)
 
 
-def format_top(chart_name, scores):
+def format_top(chart_name, scores, horse_logins=None):
+    if horse_logins is None:
+        horse_logins = set()
     rows = ["```"]
     rows.append(chart_name.upper())
     rows.append("")
@@ -35,6 +37,8 @@ def format_top(chart_name, scores):
             trim_len(score['user']['login'], 10).ljust(11),
             "{:.3f}".format(score['score']).rjust(5)
         ))
+        if score['user']['login'] in horse_logins:
+            rows[-1] += " 🐴"
     rows.append("```")
     return "\n".join(rows)
 

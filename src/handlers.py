@@ -311,8 +311,10 @@ async def _top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) 
     task = allcups.task(context.chat_data['task_id'])
     scores = allcups.task_leaderboard(context.chat_data['task_id'])[:n]
     name = f"{task['contest']['name']}: {task['name']}"
+
+    horse_logins = context.chat_data.get('cups_logins', set())
     if short:
-        text = msg_formatter.format_top(name, scores)
+        text = msg_formatter.format_top(name, scores, horse_logins)
     else:
         text = msg_formatter.format_toop(name, scores)
     if len(text) > 4000:
