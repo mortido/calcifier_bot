@@ -5,6 +5,7 @@ import urllib.parse
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from telegram.error import Forbidden
 
 import allcups
 import msg_formatter
@@ -44,12 +45,23 @@ async def _process_battle_results(battle, name, lb_scores, context: ContextTypes
             [InlineKeyboardButton(text='Watch Replay', url=replay_url)]
         ])
 
+        blocked = []
         for chat_id in battle_subs[login]:
-            await context.bot.send_message(chat_id=chat_id,
-                                           text=msg_txt,
-                                           parse_mode='markdown',
-                                           reply_markup=reply_markup)
+            try:
+                await context.bot.send_message(chat_id=chat_id,
+                                               text=msg_txt,
+                                               parse_mode='markdown',
+                                               reply_markup=reply_markup)
+            except Forbidden as e:
+                logger.warning(f"Bot blocked by '{chat_id}' - removing subscription.")
+                blocked.append(chat_id)
+                context.application.chat_data[chat_id].pop('battle_login', None)
+            except Exception as e:
+                logger.warning(f"Error sending game subscription: {e}")
             time.sleep(1 / 10)
+        if blocked:
+            battle_subs[login] = [s for s in battle_subs[login] if s not in blocked]
+    context.bot_data['battle_subs'] = battle_subs
 
 
 async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
