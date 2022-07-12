@@ -33,7 +33,7 @@ def format_top(chart_name, scores):
         rows.append("{}{}{}".format(
             str(score['rank']).ljust(4),
             trim_len(score['user']['login'], 10).ljust(11),
-            str(score['score']).rjust(5)
+            "{:.3f}".format(score['score']).rjust(5)
         ))
     rows.append("```")
     return "\n".join(rows)
