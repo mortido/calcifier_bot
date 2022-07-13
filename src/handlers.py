@@ -527,6 +527,7 @@ async def _plot_logins(cups_logins,
     fig.tight_layout()
     fig.savefig(plot_file, format='png')
     plt.clf()
+    plt.close(fig)
     plot_file.seek(0)
 
     await update.effective_message.reply_photo(plot_file, caption="🔥")
