@@ -41,6 +41,7 @@ def main():
     logger.info(f"Starting Calcifier bot... ")
     logger.info(f"Persistent file: {config.persistent_file}")
     logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
+    logger.info(f"Horse chat: {', '.join(config.horse_chat)}")
 
     # Using JSON can broke some sets
     persistent_storage = PicklePersistence(filepath=config.persistent_file)
