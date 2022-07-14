@@ -503,17 +503,21 @@ async def _plot_logins(cups_logins,
     myFmt = mdates.DateFormatter('%b %d %H:%M')
     ax.xaxis.set_major_formatter(myFmt)
     ax.grid(alpha=.9)
+    time_limit = timedelta(days=2)
     for login in cups_logins:
         plot_data = []
         dates = []
         for h in task_history:
+            d = datetime.fromtimestamp(h['ts'], timezone.utc)
+            if now - d > time_limit:
+                continue
             point = None
             for s in h['leaderboard']:
                 if s['login'].lower() == login.lower():
                     point = s['score']
                     break
             plot_data.append(point)
-            dates.append(datetime.fromtimestamp(h['ts'], timezone.utc))
+            dates.append(d)
 
         if plot_type == 'lines':
             plt.plot(dates, plot_data, label=login)

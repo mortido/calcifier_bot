@@ -22,7 +22,10 @@ async def _process_battle_results(battle, name, lb_scores, context: ContextTypes
 
         scores = []
         sorted_results = list(sorted(battle['battle_results'], key=lambda x: x['score'], reverse=True))
+        win = False
         for i, r in enumerate(sorted_results):
+            if login == r['user']['login']:
+                win = (i + 1) <= (len(sorted_results) // 2)
             scores.append({
                 'rank': i + 1,
                 'login': r['user']['login'],
@@ -34,7 +37,7 @@ async def _process_battle_results(battle, name, lb_scores, context: ContextTypes
                 'lb_rank': lb_scores[r['user']['login']]['rank'],
             })
 
-        msg_txt = msg_formatter.format_game(battle, name, scores, lb_scores[login])
+        msg_txt = msg_formatter.format_game(battle, name, scores, lb_scores[login], win)
 
         replay_url = "https://cups.online" + battle['visualizer_url'] + "?"
         for br in battle['battle_results']:

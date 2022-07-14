@@ -194,7 +194,7 @@ loose_phrases = [
 ]
 
 
-def format_game(battle, name, scores, my_lb):
+def format_game(battle, name, scores, my_lb, win_flag):
     # win = int(game.deltas[player_idx]) > 0
     # rows = [random.choice(win_phrases if win else loose_phrases),
     #         f"http://russianaicup.ru/game/view/{game.gid}",
@@ -217,4 +217,5 @@ def format_game(battle, name, scores, my_lb):
             str(int(s['score'])).rjust(6)
         ))
     rows.append("```")
+    rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
     return "\n".join(rows)
