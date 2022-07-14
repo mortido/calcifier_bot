@@ -23,14 +23,15 @@ def trim_len(string, max_len):
 #     return "\n".join(rows)
 
 
-def format_top(chart_name, scores, horse_logins=None):
+def format_top(chart_name, scores, horse_logins=None, header=True):
     if horse_logins is None:
         horse_logins = set()
     rows = ["```"]
-    rows.append(chart_name.upper())
-    rows.append("")
-    rows.append("    PLAYER     SCORE")
-    rows.append("--------------------")
+    if header:
+        rows.append(chart_name.upper())
+        rows.append("")
+        rows.append("    PLAYER     SCORE")
+        rows.append("--------------------")
     for score in scores:
         rows.append("{}{}{}".format(
             str(score['rank']).ljust(4),

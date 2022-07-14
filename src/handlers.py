@@ -269,9 +269,9 @@ async def _pos(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) 
 
     name = f"{task['contest']['name']}: {task['name']}"
     if short:
-        text = msg_formatter.format_top(name, scores)
+        text = msg_formatter.format_top(name, scores, header=False)
     else:
-        text = msg_formatter.format_toop(name, scores)
+        text = msg_formatter.format_toop(name, scores, header=False)
     if len(text) > 4000:
         text = text[:-3][:4000] + ".🔥..🔥🔥```"
     await update.effective_message.reply_markdown(text)
@@ -312,7 +312,9 @@ async def _top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) 
     scores = allcups.task_leaderboard(context.chat_data['task_id'])[:n]
     name = f"{task['contest']['name']}: {task['name']}"
 
-    horse_logins = context.chat_data.get('cups_logins', set())
+    horse_logins = set()
+    if context.bot_data['horse_chat'] == update.effective_chat.id:
+        horse_logins = context.chat_data.get('cups_logins', set())
     if short:
         text = msg_formatter.format_top(name, scores, horse_logins)
     else:
