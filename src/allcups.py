@@ -66,6 +66,16 @@ def task(id):
         return None
     return response.json()
 
+@cachetools.func.ttl_cache(maxsize=128, ttl=10)
+def battles_bot(task_id, since=None):
+    url = ALLCUPS_API_URL
+    url += f"battles/task/{task_id}/bot/"
+    params = {}
+    if since is not None:
+        params["since"] = since.isoformat()
+    response = requests.get(url, params=params)
+    json_response = response.json()
+    return json_response['battles']
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def battles(task_id=None, max_count=1000):  #, last_battle_id=None):

@@ -9,41 +9,53 @@ from telegram.error import Forbidden
 
 import allcups
 import msg_formatter
+import names
 
 logger = logging.getLogger(__name__)
 
 
-async def _process_battle_results(battle, name, lb_scores, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def _process_battle_results(battle, name, lb_scores,
+                                  context: ContextTypes.DEFAULT_TYPE) -> None:
     battle_subs = context.bot_data.get('battle_subs', dict())
-    logins = [r['user']['login'] for r in battle['battle_results']]
+    logins = [r['user__login'] for r in battle['user_results']]
     for login in logins:
         if login not in battle_subs:
             continue
 
         scores = []
-        sorted_results = list(sorted(battle['battle_results'], key=lambda x: x['score'], reverse=True))
+        sorted_results = list(
+            sorted(battle['user_results'], key=lambda x: x['score'], reverse=True))
         win = False
+        solution = -1
         for i, r in enumerate(sorted_results):
-            if login == r['user']['login']:
+            if login == r['user__login']:
                 win = (i + 1) <= (len(sorted_results) // 2)
-            scores.append({
-                'rank': i + 1,
-                'login': r['user']['login'],
-                'sub_flag': login == r['user']['login'],
-                'score': r['score'],
-                'id': r['solution']['id'],
-                'language': r['solution']['language']['name'],
-                'lb_score': lb_scores[r['user']['login']]['score'],
-                'lb_rank': lb_scores[r['user']['login']]['rank'],
-            })
+                solution = r['solution_id']
 
-        msg_txt = msg_formatter.format_game(battle, name, scores, lb_scores[login], win)
+            score = {
+                'rank': i + 1,
+                'login': r['user__login'],
+                'sub_flag': login == r['user__login'],
+                'score': r['score'],
+                'id': r['solution_id'],
+                'language': r['language__name'],
+            }
+            if r['user__login'] in lb_scores:
+                score['lb_score'] = lb_scores[r['user__login']]['score']
+                score['lb_rank'] = lb_scores[r['user__login']]['rank']
+            else:
+                score['lb_score'] = "-"
+                score['lb_rank'] = "-"
+            scores.append(score)
+
+        msg_txt = msg_formatter.format_game(battle, name, scores, lb_scores[login], win, solution)
 
         replay_url = "https://cups.online" + battle['visualizer_url'] + "?"
-        for br in battle['battle_results']:
-            replay_url += f"&player-names=" + urllib.parse.quote(br['user']['login'])
-            replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution']['external_id']))
-        replay_url += f"&replay=%2Fapi_v2%2Fbattles%2F{battle['id']}%2Fget_result_file%2F"
+        for br in battle['user_results']:
+            replay_url += f"&player-names=" + urllib.parse.quote(br['user__login'])
+            # replay_url += f"&player-names=" + urllib.parse.quote(names.get_name())
+            replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution__external_id']))
+        replay_url += f"&replay=" + urllib.parse.quote(battle['battle_result_file'])
         reply_markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(text='Watch Replay', url=replay_url)]
         ])
@@ -73,6 +85,10 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     sent_battle_ids = context.bot_data.get('sent_battle_ids', dict())
     context.bot_data['sent_battle_ids'] = sent_battle_ids
+
+    # battle_updates = context.bot_data.get('battle_updates', dict())
+    # context.bot_data['battle_updates'] = battle_updates
+
     # battle_last_id = context.bot_data.get('battle_last_id', dict())
     # context.bot_data['battle_last_id'] = battle_last_id
     context.bot_data.pop('battle_last_id', None)
@@ -88,7 +104,8 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
             for t in r['tasks']:
                 name = f"{b['name']}: {r['name']}: {t['name']}"
                 sent_ids = sent_battle_ids.get(t['id'], set())
-                task_battles = allcups.battles(t['id'])
+                # battle_update = battle_updates.get(t['id'], None)
+                task_battles = allcups.battles_bot(t['id'])
 
                 if not task_battles:
                     continue
@@ -103,6 +120,8 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
 
                 for battle in task_battles[::-1]:
                     if battle['id'] in sent_ids:
+                        continue
+                    if battle['status'] != 'DONE':
                         continue
                     await _process_battle_results(battle, name, lb_scores, context)
                     sent_ids.add(battle['id'])

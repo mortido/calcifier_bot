@@ -40,8 +40,6 @@ def main():
 
     logger.info(f"Starting Calcifier bot... ")
     logger.info(f"Persistent file: {config.persistent_file}")
-    logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
-    logger.info(f"Horse chat: {config.horse_chat}")
 
     # Using JSON can broke some sets
     persistent_storage = PicklePersistence(filepath=config.persistent_file)
@@ -58,8 +56,10 @@ def main():
 
     job_queue = application.job_queue
     async def set_bot_admins(c):
-        logger.info(f"============= Calcifier bot... ")
+        logger.info(f"Setting bot_data...")
+        logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
         c.bot_data['bot_admins'] = config.bot_admins
+        logger.info(f"Horse chat: {config.horse_chat}")
         c.bot_data['horse_chat'] = config.horse_chat
     job_queue.run_once(set_bot_admins, 5)
     job_queue.run_repeating(jobs.games_notifications, interval=30, first=5)

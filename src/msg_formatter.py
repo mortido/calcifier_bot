@@ -195,15 +195,17 @@ loose_phrases = [
 ]
 
 
-def format_game(battle, name, scores, my_lb, win_flag):
+def format_game(battle, name, scores, my_lb, win_flag, solution):
     # win = int(game.deltas[player_idx]) > 0
     # rows = [random.choice(win_phrases if win else loose_phrases),
     #         f"http://russianaicup.ru/game/view/{game.gid}",
     # Δ
+    game_type = "🏆 RANKED" if battle['is_ranked'] else "🤡 CUSTOM"
     rows = [
             # f"{name.ljust(30)}     SCORE    Δ   LB"]
             f"`{name.ljust(30)}`",
-            f"Game ID:  `{battle['id']}`",
+            f"Game:  `{battle['id']}  {game_type}`",
+            f"SOLUTION ID:  `{solution}`",
             "LB:  `{}`   Score:  `{:.3f}`".format(my_lb['rank'], my_lb['score']),
             "",
             "```",

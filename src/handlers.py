@@ -379,6 +379,15 @@ async def _sub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if len(context.args) > 1:
         await update.effective_message.reply_text("Подписаться можно только на 1 cups л🔥гин")
         return
+
+    login = context.chat_data.pop('battle_login', None)
+    if login:
+        battle_subs = context.bot_data.get('battle_subs', dict())
+        context.bot_data['battle_subs'] = battle_subs
+        chats = battle_subs.get('battle_subs', set())
+        battle_subs[login] = chats
+        chats.discard(update.effective_chat.id)
+
     login = context.args[0]
     context.chat_data['battle_login'] = login
     battle_subs = context.bot_data.get('battle_subs', dict())
@@ -602,7 +611,7 @@ plotl_top = PrefixHandler(cmd.PREFIXES, cmd.PLOTL_TOP, partial(_plot_top, plot_t
 
 
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logger.warning('Update "%s" caused error "%s"' % (update, context.error))
+    logger.warning('Error: "%s" update: %s' % (context.error, update))
     if update:
         await update.effective_message.reply_text(
             "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
