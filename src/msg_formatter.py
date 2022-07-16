@@ -138,6 +138,17 @@ def format_chat_info(contest=None, task=None) -> str:
 
 
 import random
+win_commandos_phrases = [
+    "Уделал Commandos'a!",
+    "Commandos негодует",
+    "Отомстил Commandos'у за mortido",
+    "Commandos разбит!",
+]
+
+loose_with_commandos_phrases = [
+    "Зато Commandos сыграл еще хуже",
+    "Ну хоть не как Commandos",
+]
 
 win_phrases = [
     "Ты на правильном пути",
@@ -163,6 +174,8 @@ win_phrases = [
     "Интересно, это заслуженная победа, или просто повезло?",
     "Уверенно.",
     "Like a boss.",
+    "Я бы и сам поучаствовал, но до твоего бота мне далеко.",
+    "Жги, грабь, доминируй!",
     "Держи `1u + pos.x + width_ * (1u + pos.y)` - это кусок кода mortido, он приносит segfault'ы",
 ]
 
@@ -182,8 +195,10 @@ loose_phrases = [
     "Выше голову!",
     "Не вешай нос!",
     "Не унывай!",
+    "Вообще сейчас есть много севрвисов психологической помощи онлайн.",
     "Не... ну это совсем хреновая игра...",
     "Мы его запомним и отомстим",
+    "Давай что-нибудь сожжем?",
     "Пожалуйста... Ну и не нужно...",
     "Держи `for (auto &entity : workers){` - это кусок кода Commandos'a, он приносит удачу",
     "У всех бывают осечки.",
@@ -211,8 +226,13 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
             "```",
             ]
 
+    my_login = ""
+    all_logins = {}
     for s in scores:
         login = "* " + s['login'] if s['sub_flag'] else s['login']
+        if s['sub_flag']:
+            my_login = s['login']
+        all_logins[s['login']] = max(all_logins.get(s['login'], 0), s['score'])
         rows.append("[{}] {}{}{}".format(
             str(s['lb_rank']).rjust(3),
             trim_len(login, 10).ljust(11),
@@ -220,5 +240,10 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
             str(int(s['score'])).rjust(6)
         ))
     rows.append("```")
-    rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
+
+    if my_login != 'Commandos' and 'Commandos' in all_logins \
+            and all_logins[my_login] > all_logins['Commandos']:
+        rows.append(random.choice(win_commandos_phrases) if win_flag else random.choice(loose_with_commandos_phrases))
+    else:
+        rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
     return "\n".join(rows)
