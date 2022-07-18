@@ -17,9 +17,23 @@ import names
 
 logger = logging.getLogger(__name__)
 
+import asyncio
 
-async def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
-    admins = await update.effective_chat.get_administrators()
+#TODO: do it the right way...
+def synchronize_async_helper(to_await):
+    async_response = []
+
+    async def run_and_capture_result():
+        r = await to_await
+        async_response.append(r)
+
+    loop = asyncio.get_event_loop()
+    coroutine = run_and_capture_result()
+    loop.run_until_complete(coroutine)
+    return async_response[0]
+
+def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    admins = synchronize_async_helper(update.effective_chat.get_administrators())
     admins_ids = [admin.user['id'] for admin in admins]
     return update.effective_user.id in admins_ids
 
@@ -40,10 +54,10 @@ def private_chat_only(func):
 
 def chat_and_bot_admins_only(func):
     @wraps(func)
-    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if update.effective_chat.type != 'private' \
                 and not is_bot_admin(update, context) \
-                and not await is_chat_admin(update, context):
+                and not is_chat_admin(update, context):
             return None
         return func(update, context)
 
