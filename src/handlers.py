@@ -571,6 +571,8 @@ async def _plot_logins(cups_logins,
         plt.axhline(y=0.0, color='darkviolet', linestyle='--', label=relative_login)
 
     for login in cups_logins:
+        if login == relative_login:
+            continue
         if plot_type == 'lines':
             plt.plot(dates, plot_data[login], label=login)
         else:
