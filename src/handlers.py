@@ -18,7 +18,7 @@ import names
 logger = logging.getLogger(__name__)
 
 
-def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+async def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     admins = await update.effective_chat.get_administrators()
     admins_ids = [admin.user['id'] for admin in admins]
     return update.effective_user.id in admins_ids
@@ -40,10 +40,10 @@ def private_chat_only(func):
 
 def chat_and_bot_admins_only(func):
     @wraps(func)
-    def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if update.effective_chat.type != 'private' \
                 and not is_bot_admin(update, context) \
-                and not is_chat_admin(update, context):
+                and not await is_chat_admin(update, context):
             return None
         return func(update, context)
 
