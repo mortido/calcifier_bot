@@ -565,7 +565,9 @@ async def _plot_logins(cups_logins,
         for login in cups_logins:
             login_data = plot_data[login]
             for i, rel_d in enumerate(relative_data):
-                if login_data[i] is not None:
+                if login_data[i] is None or rel_d is None:
+                    login_data[i] = None
+                else:
                     login_data[i] -= rel_d
 
         plt.axhline(y=0.0, color='darkviolet', linestyle='--', label=relative_login)
