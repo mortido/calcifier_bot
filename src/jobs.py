@@ -94,7 +94,7 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
     context.bot_data.pop('battle_last_id', None)
     for b in battles:
         end_date = datetime.fromisoformat(b['finish_date'])
-        if now > end_date:
+        if now > end_date and b['slug'] != 'coderoyale':
             continue
         for r in b['rounds']:
             start_date = datetime.fromisoformat(r['start_date'])
