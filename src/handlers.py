@@ -40,12 +40,11 @@ def private_chat_only(func):
 def chat_and_bot_admins_only(func):
     @wraps(func)
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        chat_admin = await is_chat_admin(update, context)
         if update.effective_chat.type != 'private' \
                 and not is_bot_admin(update, context) \
-                and not chat_admin:
+                and not (await is_chat_admin(update, context)):
             return None
-        return func(update, context)
+        return await func(update, context)
 
     return wrapper
 
