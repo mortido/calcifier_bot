@@ -3,6 +3,9 @@ import logging
 import urllib
 from io import BytesIO
 from datetime import datetime, timezone, timedelta
+import argparse
+import shlex
+import sys
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -16,6 +19,12 @@ import allcups
 import names
 
 logger = logging.getLogger(__name__)
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise argparse.ArgumentError(None, message)
+
 
 async def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     admins = await update.effective_chat.get_administrators()
@@ -114,6 +123,9 @@ CUPS\_LOGIN - *регистроНЕзависимый список логино�
 Можно отрисовать только рейтинг топов:
 `!plot_top` или `!plot_top 6`
 У команды есть `plotl` (l на конце) версия, для отрисовки линиями, а не сутпеньками.
+
+Прислать ссылку на игру (без правильных ников):
+`!game GAME_ID`
 """
     await update.effective_message.reply_markdown(help_txt)
 
@@ -200,19 +212,20 @@ chat_remove = PrefixHandler(cmd.PREFIXES, cmd.CHAT_REMOVE, _chat_remove)
 
 async def _chat_top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
     cups_logins = context.chat_data.get('cups_logins', set())
     if not cups_logins:
         await update.effective_message.reply_markdown("Для чата не добавлены CUPS л🔥гины. "
-                                            f"Команда `!{cmd.CHAT_ADD[0]}`")
+                                                      f"Команда `!{cmd.CHAT_ADD[0]}`")
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
@@ -236,13 +249,14 @@ chat_toop = PrefixHandler(cmd.PREFIXES, cmd.CHAT_TOOP, partial(_chat_top, short=
 
 async def _pos(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
     cups_logins = set(l.lower() for l in context.args)
@@ -282,13 +296,14 @@ poss = PrefixHandler(cmd.PREFIXES, cmd.POOS, partial(_pos, short=False))
 
 async def _top(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее соревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее соревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не выбрана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
@@ -395,7 +410,8 @@ async def _sub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     battle_subs[login] = chats
     chats.add(update.effective_chat.id)
 
-    await update.effective_message.reply_markdown(f"Подписка на системные игры `{login}` установлена")
+    await update.effective_message.reply_markdown(
+        f"Подписка на системные игры `{login}` установлена")
 
 
 sub = PrefixHandler(cmd.PREFIXES, cmd.SUB_TO, _sub)
@@ -446,13 +462,14 @@ unsub = PrefixHandler(cmd.PREFIXES, cmd.UNSUB_FROM, _unsub)
 
 async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
     if not context.args:
@@ -481,6 +498,7 @@ game = PrefixHandler(cmd.PREFIXES, cmd.GAME, _game)
 async def _plot_logins(cups_logins,
                        update: Update,
                        context: ContextTypes.DEFAULT_TYPE,
+                       relative_login=None,
                        plot_type='step') -> None:
     task = allcups.task(context.chat_data['task_id'])
 
@@ -522,8 +540,13 @@ async def _plot_logins(cups_logins,
     ax.xaxis.set_major_formatter(myFmt)
     ax.grid(alpha=.9)
     time_limit = timedelta(days=2)
-    for login in cups_logins:
-        plot_data = []
+    plot_data = {}
+    ls = set(cups_logins)
+    if relative_login is not None:
+        ls.add(relative_login)
+    for login in ls:
+        pd = []
+        plot_data[login] = pd
         dates = []
         for h in task_history:
             d = datetime.fromtimestamp(h['ts'], timezone.utc)
@@ -534,13 +557,24 @@ async def _plot_logins(cups_logins,
                 if s['login'].lower() == login.lower():
                     point = s['score']
                     break
-            plot_data.append(point)
+            pd.append(point)
             dates.append(d)
 
+    if relative_login is not None and relative_login in plot_data:
+        relative_data = list(plot_data[relative_login])
+        for login in cups_logins:
+            login_data = plot_data[login]
+            for i, rel_d in enumerate(relative_data):
+                if login_data[i] is not None:
+                    login_data[i] -= rel_d
+
+        plt.axhline(y=0.0, color='darkviolet', linestyle='--', label=relative_login)
+
+    for login in cups_logins:
         if plot_type == 'lines':
-            plt.plot(dates, plot_data, label=login)
+            plt.plot(dates, plot_data[login], label=login)
         else:
-            plt.step(dates, plot_data, where='mid', label=login)
+            plt.step(dates, plot_data[login], where='mid', label=login)
 
     plt.grid(color='0.95')
     plt.legend(fontsize=16)
@@ -557,22 +591,39 @@ async def _plot_logins(cups_logins,
 
 async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='step') -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
-    cups_logins = set(l for l in context.args)
-    if not cups_logins:
-        await update.effective_message.reply_text("Ст🔥ит  указ🔥ть  ник")
-        return
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    await _plot_logins(cups_logins, update, context, plot_type=plot_type)
+    parser = ArgumentParser()
+    parser.add_argument(
+        '-r', '--relative', type=str, required=False,
+        help='CUPS логин, относительно которого строить график'
+    )
+    parser.add_argument("cups_logins", type=str, nargs="+",
+                        help='CUPS логины для отрисовки на графике')
+
+    args = shlex.split(update.effective_message.text)[1:]
+    try:
+        args = parser.parse_args(args)
+    except argparse.ArgumentError as e:
+        help = parser.format_help().split("\n")[0]
+        help = help[help.find("[-h]") + 5:]
+        msg = f"```\nUsage: {help}\n\n{e.message}\n```"
+        logger.warning(msg)
+        await update.effective_message.reply_markdown(msg)
+        return
+
+    await _plot_logins(args.cups_logins, update, context, plot_type=plot_type,
+                       relative_login=args.relative)
 
 
 plot = PrefixHandler(cmd.PREFIXES, cmd.PLOT, _plot)
@@ -581,37 +632,50 @@ plotl = PrefixHandler(cmd.PREFIXES, cmd.PLOTL, partial(_plot, plot_type="lines")
 
 async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='step') -> None:
     if 'contest_slug' not in context.chat_data:
-        await update.effective_message.reply_markdown("Для чата не установлено текущее с🔥ревнование. "
-                                            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
         return
 
     if 'task_id' not in context.chat_data:
         await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
-                                            f"Команда `!{cmd.TASK[0]}`")
+                                                      f"Команда `!{cmd.TASK[0]}`")
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    n = 10
-    if context.args:
-        try:
-            n = int(context.args[0])
-        except ValueError:
-            logger.warning(f"Couldn't parse N for plot_top callback: {context.args[0]}")
-            await update.effective_message.reply_text("Ты меня ог🔥рчаешь")
-            return
-        if n == 0:
-            await update.effective_message.reply_text("C🔥mmandos")
-            return
-        if n < 0:
-            await update.effective_message.reply_text("Не н🔥до так")
-            return
+    parser = ArgumentParser()
+    parser.add_argument(
+        '-r', '--relative', type=str, required=False,
+        help='CUPS логин, относительно которого строить график'
+    )
+
+    def positive_int(value):
+        ivalue = int(value)
+        if ivalue <= 0:
+            raise argparse.ArgumentTypeError("%s - это слишк🔥м мало" % value)
+        return ivalue
+
+    parser.add_argument("N", type=positive_int, default=10, nargs='?',
+                        help='Количество участников из топа')
+
+    args = shlex.split(update.effective_message.text)[1:]
+    try:
+        args = parser.parse_args(args)
+    except argparse.ArgumentError as e:
+        help = parser.format_help().split("\n")[0]
+        help = help[help.find("[-h]") + 5:]
+        msg = f"```\nUsage: {help}\n\n{e.message}\n```"
+        logger.warning(msg)
+        await update.effective_message.reply_markdown(msg)
+        return
 
     task = allcups.task(context.chat_data['task_id'])
-    scores = allcups.task_leaderboard(context.chat_data['task_id'])[:n]
+    scores = allcups.task_leaderboard(context.chat_data['task_id'])[:args.N]
     logins = [s['user']['login'] for s in scores]
 
-    await _plot_logins(logins, update, context, plot_type=plot_type)
+    await _plot_logins(logins, update, context, plot_type=plot_type, relative_login=args.relative)
+
 
 plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
 plotl_top = PrefixHandler(cmd.PREFIXES, cmd.PLOTL_TOP, partial(_plot_top, plot_type="lines"))
