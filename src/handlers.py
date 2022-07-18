@@ -689,4 +689,4 @@ async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     logger.warning('Error: "%s" update: %s' % (context.error, update))
     if update:
         await update.effective_message.reply_text(
-            "Ур🔥!  Пр🔥изошла  неизветн🔥я  🔥шибка.  Мы  уже  зал🔥грировали  ее,  но  испр🔥влять  не  будем.")
+            "Во мне что-то сл🔥малось.")
