@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def is_chat_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
-    admins = update.effective_chat.get_administrators()
+    admins = await update.effective_chat.get_administrators()
     admins_ids = [admin.user['id'] for admin in admins]
     return update.effective_user.id in admins_ids
 
@@ -492,12 +492,20 @@ async def _plot_logins(cups_logins,
     history[context.chat_data['task_id']] = task_history
 
     ts = datetime.fromisoformat(task['start_date'])
+    finish_date = datetime.fromisoformat(task['finish_date'])
     time_step = timedelta(minutes=15)
     now = datetime.now(timezone.utc) + time_step
+    end = min(finish_date, now)
     if task_history:
-        ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc) + time_step
+        ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc)
 
-    while ts < now:
+    # TODO: Remove in future.
+    while ts > finish_date:
+        task_history.pop()
+        ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc)
+
+    ts += time_step
+    while ts <= end:
         scores = allcups.task_leaderboard(context.chat_data['task_id'], ts)
         lb = [{'rank': s['rank'], 'login': s['user']['login'], 'score': s['score']} for s in scores]
         task_history.append({
