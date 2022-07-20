@@ -78,11 +78,13 @@ def battles_bot(task_id, since=None):
     return json_response['battles']
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
-def battles(task_id=None, max_count=1000):  #, last_battle_id=None):
+def battles(task_id=None, max_count=1000, search=None):  #, last_battle_id=None):
     url = ALLCUPS_API_URL
     if task_id:
         url += f"battles/task/{task_id}"
         params = {"page_size": 108}
+        if search:
+            params["search"] = search
         response = requests.get(url, params=params)
         json_response = response.json()
         # if 'results' not in json_response:

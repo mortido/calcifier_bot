@@ -685,6 +685,41 @@ plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
 plotl_top = PrefixHandler(cmd.PREFIXES, cmd.PLOTL_TOP, partial(_plot_top, plot_type="lines"))
 
 
+async def _games(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if 'contest_slug' not in context.chat_data:
+        await update.effective_message.reply_markdown(
+            "Для чата не установлено текущее с🔥ревнование. "
+            f"Команда `!{cmd.CONTEST[0]} %CONTEST_SLUG%`")
+        return
+
+    if 'task_id' not in context.chat_data:
+        await update.effective_message.reply_markdown("Для чата не в🔥брана задача. "
+                                                      f"Команда `!{cmd.TASK[0]}`")
+        return
+
+    if not context.args:
+        await update.effective_message.reply_text("Ст🔥ит  указ🔥ть  ник")
+        return
+    cups_login = context.args[0]
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+    task = allcups.task(context.chat_data['task_id'])
+    battles = allcups.battles(context.chat_data['task_id'],
+                              max_count=10,
+                              search=cups_login.lower())[:10]
+
+    if not battles:
+        await update.effective_message.reply_text("Не  н🔥шел  таких  участник🔥в")
+        return
+
+    name = f"{task['contest']['name']}: {task['name']}"
+    text = msg_formatter.format_battles(name, cups_login, battles)
+    await update.effective_message.reply_markdown(text)
+
+
+games = PrefixHandler(cmd.PREFIXES, cmd.GAMES, _games)
+
+
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.warning('Error: "%s" update: %s' % (context.error, update))
     if update:

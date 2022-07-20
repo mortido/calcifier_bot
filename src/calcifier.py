@@ -78,6 +78,7 @@ def main():
     application.add_handler(handlers.sub)
     application.add_handler(handlers.unsub)
     application.add_handler(handlers.game)
+    application.add_handler(handlers.games)
     application.add_handler(handlers.plot)
     application.add_handler(handlers.plotl)
     application.add_handler(handlers.plot_top)

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import urllib.parse
 
 
 def trim_len(string, max_len):
@@ -138,6 +139,7 @@ def format_chat_info(contest=None, task=None) -> str:
 
 
 import random
+
 win_commandos_phrases = [
     "Уделал Commandos'a!",
     "Commandos негодует",
@@ -230,6 +232,35 @@ loose_phrases = [
 ]
 
 
+def format_battles(name, cups_login, battles):
+    cups_login = cups_login.lower()
+    rows = []
+    for battle in battles:
+        replay_url = "https://cups.online" + battle['visualizer_url'] + "?"
+        for br in battle['battle_results']:
+            replay_url += f"&player-names=" + urllib.parse.quote(br['user']['login'])
+            replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution']['external_id']))
+        replay_url += f"&replay=" + urllib.parse.quote(battle['battle_result_file'])
+        rows.append(f"Game: ` {battle['id']}".ljust(25) + f"` [REPLAY]({replay_url})")
+        rows.append("```")
+        scores = sorted(battle['battle_results'], key=lambda x: x['score'], reverse=True)
+        for s in scores:
+            login = s['user']['login']
+            if cups_login in s['user']['login'].lower():
+                login = "* " + login
+
+            rows.append("{}[{}]{}".format(
+                trim_len(login, 15).ljust(16),
+                s['solution']['id'],
+                str(int(s['score'])).rjust(6)
+            ))
+
+        rows.append("```")
+        rows.append("")
+
+    return "\n".join(rows)
+
+
 def format_game(battle, name, scores, my_lb, win_flag, solution):
     # win = int(game.deltas[player_idx]) > 0
     # rows = [random.choice(win_phrases if win else loose_phrases),
@@ -237,14 +268,14 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
     # Δ
     game_type = "🏆 RANKED" if battle['is_ranked'] else "🤡 CUSTOM"
     rows = [
-            # f"{name.ljust(30)}     SCORE    Δ   LB"]
-            f"`{name.ljust(30)}`",
-            f"Game:  `{battle['id']}  {game_type}`",
-            f"SOLUTION ID:  `{solution}`",
-            "LB:  `{}`   Score:  `{:.3f}`".format(my_lb['rank'], my_lb['score']),
-            "",
-            "```",
-            ]
+        # f"{name.ljust(30)}     SCORE    Δ   LB"]
+        f"`{name.ljust(30)}`",
+        f"Game:  `{battle['id']}  {game_type}`",
+        f"SOLUTION ID:  `{solution}`",
+        "LB:  `{}`   Score:  `{:.3f}`".format(my_lb['rank'], my_lb['score']),
+        "",
+        "```",
+    ]
 
     my_login = ""
     all_logins = {}
@@ -263,7 +294,8 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
 
     if my_login != 'Commandos' and 'Commandos' in all_logins \
             and all_logins[my_login] > all_logins['Commandos']:
-        rows.append(random.choice(win_commandos_phrases) if win_flag else random.choice(loose_with_commandos_phrases))
+        rows.append(random.choice(win_commandos_phrases) if win_flag else random.choice(
+            loose_with_commandos_phrases))
     else:
         rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
     return "\n".join(rows)

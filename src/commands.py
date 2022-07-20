@@ -1,6 +1,7 @@
 PREFIXES = ["/", "!"]
 
 GAME = ["game", "игра", "пфьу"]
+GAMES = ["games", "игры", "пфьуы"]
 PLOT = ["plot", "здще"]
 PLOTL = ["plotl", "здщед"]
 PLOT_TOP = ["plot_top", "здще_ещз"]
