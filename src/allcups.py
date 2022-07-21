@@ -10,15 +10,15 @@ ALLCUPS_API_URL = "https://cups.online/api_v2/"
 
 def tracks():
     url = ALLCUPS_API_URL + "categories"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     return response.json()
 
 
 def _get_all_pages(*args, **kwargs):
-    json_response = requests.get(*args, **kwargs).json()
+    json_response = requests.get(*args, timeout=10, **kwargs).json()
     result = json_response['results']
     while json_response['next']:
-        response = requests.get(json_response['next'])
+        response = requests.get(json_response['next'], timeout=10)
         json_response = response.json()
         result = result + json_response['results']
     return result
@@ -34,7 +34,7 @@ def contests(track=None):
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def contest_navigation(slug):
     url = ALLCUPS_API_URL + f"contests/{slug}/navigation"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code != 200:
         return None
     return response.json()
@@ -43,7 +43,7 @@ def contest_navigation(slug):
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def contest(slug):
     url = ALLCUPS_API_URL + f"contests/{slug}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code != 200:
         return None
     return response.json()
@@ -52,7 +52,7 @@ def contest(slug):
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def round(id):
     url = ALLCUPS_API_URL + f"round/{id}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code != 200:
         return None
     return response.json()
@@ -61,7 +61,7 @@ def round(id):
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def task(id):
     url = ALLCUPS_API_URL + f"task/{id}"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code != 200:
         return None
     return response.json()
@@ -73,7 +73,7 @@ def battles_bot(task_id, since=None):
     params = {}
     if since is not None:
         params["since"] = since.isoformat()
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=10)
     json_response = response.json()
     return json_response['battles']
 
@@ -85,13 +85,13 @@ def battles(task_id=None, max_count=1000, search=None):  #, last_battle_id=None)
         params = {"page_size": 108}
         if search:
             params["search"] = search
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         json_response = response.json()
         # if 'results' not in json_response:
         #     return []
         results = json_response['results']
         while json_response['next'] and len(results) < max_count:
-            response = requests.get(json_response['next'])
+            response = requests.get(json_response['next'], timeout=10)
             json_response = response.json()
             results = results + json_response['results']
 
