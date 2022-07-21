@@ -1,6 +1,7 @@
-import requests
+from datetime import datetime, timedelta, timezone
+
 import cachetools.func
-from datetime import datetime, timezone, timedelta
+import requests
 
 ALLCUPS_API_URL = "https://cups.online/api_v2/"
 
@@ -23,6 +24,7 @@ def _get_all_pages(*args, **kwargs):
         result = result + json_response['results']
     return result
 
+
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def contests(track=None):
     params = {}
@@ -30,6 +32,7 @@ def contests(track=None):
         params['category'] = track
     url = ALLCUPS_API_URL + "contests"
     return _get_all_pages(url, params=params)
+
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def contest_navigation(slug):
@@ -66,6 +69,7 @@ def task(id):
         return None
     return response.json()
 
+
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def battles_bot(task_id, since=None):
     url = ALLCUPS_API_URL
@@ -77,8 +81,9 @@ def battles_bot(task_id, since=None):
     json_response = response.json()
     return json_response['battles']
 
+
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
-def battles(task_id=None, max_count=1000, search=None):  #, last_battle_id=None):
+def battles(task_id=None, max_count=1000, search=None):  # , last_battle_id=None):
     url = ALLCUPS_API_URL
     if task_id:
         url += f"battles/task/{task_id}"
@@ -95,8 +100,6 @@ def battles(task_id=None, max_count=1000, search=None):  #, last_battle_id=None)
             json_response = response.json()
             results = results + json_response['results']
 
-
-
         return results
         # return _get_all_pages(url, params=params)
     else:
@@ -111,7 +114,7 @@ def battles(task_id=None, max_count=1000, search=None):  #, last_battle_id=None)
 
 @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 def task_leaderboard(task_id, date=None):
-    url = ALLCUPS_API_URL + f"task/{task_id}/leaderboard"
+    url = ALLCUPS_API_URL + f"task/{task_id}/leaderboard/"
     if date is None:
         date = datetime.now(timezone.utc)
     else:
@@ -122,7 +125,7 @@ def task_leaderboard(task_id, date=None):
     }
     return _get_all_pages(url, params=params)
 
-#https://cups.online/api_v2/task/1314/users_search/?page_size=120
+# https://cups.online/api_v2/task/1314/users_search/?page_size=120
 
 # @cachetools.func.ttl_cache(maxsize=128, ttl=10)
 # def task_solutions(task_id, login):
