@@ -83,8 +83,11 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
     battles = allcups.battles()
     now = datetime.now(timezone.utc)
 
-    sent_battle_ids = context.bot_data.get('sent_battle_ids', dict())
-    context.bot_data['sent_battle_ids'] = sent_battle_ids
+    # sent_battle_ids = context.bot_data.get('sent_battle_ids', dict())
+    # context.bot_data['sent_battle_ids'] = sent_battle_ids
+
+    last_battle_ts = context.bot_data.get('last_battle_ts', dict())
+    context.bot_data['last_battle_ts'] = last_battle_ts
 
     # battle_updates = context.bot_data.get('battle_updates', dict())
     # context.bot_data['battle_updates'] = battle_updates
@@ -92,6 +95,8 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
     # battle_last_id = context.bot_data.get('battle_last_id', dict())
     # context.bot_data['battle_last_id'] = battle_last_id
     context.bot_data.pop('battle_last_id', None)
+    context.bot_data.pop('sent_battle_ids', None)
+
     for b in battles:
         end_date = datetime.fromisoformat(b['finish_date'])
         if now > end_date and b['slug'] != 'coderoyale':
@@ -103,11 +108,19 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 continue
             for t in r['tasks']:
                 name = f"{b['name']}: {r['name']}: {t['name']}"
-                sent_ids = sent_battle_ids.get(t['id'], set())
+                last_ts = last_battle_ts.get(t['id'], None)
+                last = datetime.fromtimestamp(last_ts, timezone.utc) if last_ts else None
+                # sent_ids = sent_battle_ids.get(t['id'], set())
                 # battle_update = battle_updates.get(t['id'], None)
+                # task_battles = allcups.battles_bot(t['id'], since=last)
                 task_battles = allcups.battles_bot(t['id'])
-
                 if not task_battles:
+                    continue
+
+                ts = datetime.fromisoformat(task_battles[0]['updated_at']).timestamp()
+                last_battle_ts[t['id']] = ts
+
+                if last_ts is None:
                     continue
 
                 scores = allcups.task_leaderboard(t['id'])
@@ -119,14 +132,16 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                     }
 
                 for battle in task_battles[::-1]:
-                    if battle['id'] in sent_ids:
+                    if datetime.fromisoformat(battle['updated_at']) <= last:
                         continue
+                    # if battle['id'] in sent_ids:
+                    #     continue
                     if battle['status'] != 'DONE':
                         continue
                     await _process_battle_results(battle, name, lb_scores, context)
                     sent_ids.add(battle['id'])
 
-                sent_battle_ids[t['id']] = set(sorted(sent_ids, reverse=True)[:5000])
+                # sent_battle_ids[t['id']] = set(sorted(sent_ids, reverse=True)[:5000])
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context

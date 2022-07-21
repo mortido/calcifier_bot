@@ -72,7 +72,7 @@ def battles_bot(task_id, since=None):
     url += f"battles/task/{task_id}/bot/"
     params = {}
     if since is not None:
-        params["since"] = since.isoformat()
+        params["since"] = since.isoformat().replace("+00:00", ".000Z")
     response = requests.get(url, params=params, timeout=10)
     json_response = response.json()
     return json_response['battles']
