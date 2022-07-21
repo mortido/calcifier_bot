@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 import urllib.parse
 import random
-from zalgo_text import zalgo
 
 
 def trim_len(string, max_len):
@@ -25,7 +24,6 @@ def trim_len(string, max_len):
 #     rows.append("```")
 #     return "\n".join(rows)
 
-Z = zalgo.zalgo()
 
 def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat=False):
     if horse_logins is None:
@@ -38,9 +36,14 @@ def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat
         rows.append("--------------------")
     for score in scores:
         login = trim_len(score['user']['login'], 10)
-        if not is_horse_chat and score['user']['login'] in horse_logins:
-            l = random.randint(0, len(login) - 1)
-            login = login[:l] + Z.zalgofy(login[l]) + login[l+1:]
+        if not is_horse_chat and score['user']['login'] in horse_logins and len(login) > 3:
+            l1 = random.randint(1, len(login) - 1)
+            l2 = random.randint(1, len(login)  - 1)
+            while l1 == l2:
+                l2 = random.randint(0, len(login) - 1)
+            if l1 > l2:
+                l1, l2 = l2, l1
+            login = login[:l1] + login[l2] + login[l1+1:l2] + login[l1] + login[l2+1:]
         rows.append("{}{}{}".format(
             str(score['rank']).ljust(4),
             login.ljust(11),
