@@ -40,7 +40,7 @@ def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat
             l1 = random.randint(1, len(login) - 1)
             l2 = random.randint(1, len(login)  - 1)
             while l1 == l2:
-                l2 = random.randint(0, len(login) - 1)
+                l2 = random.randint(1, len(login) - 1)
             if l1 > l2:
                 l1, l2 = l2, l1
             login = login[:l1] + login[l2] + login[l1+1:l2] + login[l1] + login[l2+1:]
