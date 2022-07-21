@@ -73,7 +73,7 @@ async def _process_battle_results(battle, name, lb_scores,
                 context.application.chat_data[chat_id].pop('battle_login', None)
             except Exception as e:
                 logger.warning(f"Error sending game subscription: {e}")
-            time.sleep(1 / 10)
+            time.sleep(1)
         if blocked:
             battle_subs[login] = [s for s in battle_subs[login] if s not in blocked]
     context.bot_data['battle_subs'] = battle_subs
