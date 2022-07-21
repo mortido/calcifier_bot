@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 import urllib.parse
+import random
+from zalgo_text import zalgo
 
 
 def trim_len(string, max_len):
@@ -23,8 +25,9 @@ def trim_len(string, max_len):
 #     rows.append("```")
 #     return "\n".join(rows)
 
+Z = zalgo.zalgo()
 
-def format_top(chart_name, scores, horse_logins=None, header=True):
+def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat=False):
     if horse_logins is None:
         horse_logins = set()
     rows = ["```"]
@@ -34,12 +37,16 @@ def format_top(chart_name, scores, horse_logins=None, header=True):
         rows.append("    PLAYER     SCORE")
         rows.append("--------------------")
     for score in scores:
+        login = trim_len(score['user']['login'], 10)
+        if not is_horse_chat and score['user']['login'] in horse_logins:
+            l = random.randint(0, len(login) - 1)
+            login = login[:l] + Z.zalgofy(login[l]) + login[l+1:]
         rows.append("{}{}{}".format(
             str(score['rank']).ljust(4),
-            trim_len(score['user']['login'], 10).ljust(11),
+            login.ljust(11),
             "{:.3f}".format(score['score']).rjust(5)
         ))
-        if score['user']['login'] in horse_logins:
+        if is_horse_chat and score['user']['login'] in horse_logins:
             rows[-1] += " 🐴"
     rows.append("```")
     return "\n".join(rows)

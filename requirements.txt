@@ -1,3 +1,4 @@
 python-telegram-bot==20.0a2
 requests==2.28.1
 matplotlib==3.5.2
+zalgo-text==0.6
