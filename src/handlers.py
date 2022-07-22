@@ -748,6 +748,9 @@ async def _plot_logins(cups_logins,
     plt.grid(color='0.95')
     plt.legend(fontsize=16, bbox_to_anchor=(1, 1), loc="upper left")
 
+    if display_field == 'rank':
+        plt.gca().invert_yaxis()
+
     plot_file = BytesIO()
     fig.tight_layout()
     fig.savefig(plot_file, format='png')
