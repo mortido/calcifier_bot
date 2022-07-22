@@ -646,6 +646,8 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='s
     args = shlex.split(update.effective_message.text)[1:]
     try:
         args = parser.parse_args(args)
+        if args.relative is not None and args.relative_rank is not None:
+            parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
         help = help[help.find("[-h]") + 5:]
@@ -702,6 +704,8 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
     args = shlex.split(update.effective_message.text)[1:]
     try:
         args = parser.parse_args(args)
+        if args.relative is not None and args.relative_rank is not None:
+            parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
         help = help[help.find("[-h]") + 5:]
