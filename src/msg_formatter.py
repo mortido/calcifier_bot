@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import urllib.parse
 import random
+import pytz
 
 
 def trim_len(string, max_len):
@@ -252,6 +253,9 @@ def format_battles(name, cups_login, battles):
             replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution']['external_id']))
         replay_url += f"&replay=" + urllib.parse.quote(battle['battle_result_file'])
         rows.append(f"Game: ` {battle['id']}".ljust(25) + f"` [REPLAY]({replay_url})")
+        created_at = datetime.fromisoformat(battle['created_at'])
+        created_at = created_at.astimezone(pytz.timezone("Europe/Moscow"))
+        rows.append(f"Created:  `{created_at.strftime('%m/%d/%Y %H:%M:%S MSK')}`")
         rows.append("```")
         scores = sorted(battle['battle_results'], key=lambda x: x['score'], reverse=True)
         for s in scores:
