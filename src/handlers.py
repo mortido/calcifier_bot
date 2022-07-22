@@ -1,21 +1,20 @@
-from functools import wraps, partial
-import logging
-import urllib
-from io import BytesIO
-from datetime import datetime, timezone, timedelta
 import argparse
+import logging
 import shlex
-import sys
+import urllib
+from datetime import datetime, timedelta, timezone
+from functools import partial, wraps
+from io import BytesIO
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ChatAction
-from telegram.ext import PrefixHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import CallbackQueryHandler, ContextTypes, PrefixHandler
 
+import allcups
 import commands as cmd
 import msg_formatter
-import allcups
 import names
 
 logger = logging.getLogger(__name__)
@@ -126,7 +125,7 @@ CUPS\_LOGIN - *регистроНЕзависимый список логино�
 
 Прислать ссылку на игру (без правильных ников):
 `!game GAME_ID`
-"""
+"""  # noqa
     await update.effective_message.reply_markdown(help_txt)
 
 
@@ -403,7 +402,7 @@ async def _pos(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) 
                                                       f"Команда `!{cmd.TASK[0]}`")
         return
 
-    cups_logins = set(l.lower() for l in context.args)
+    cups_logins = set(login.lower() for login in context.args)
     if not cups_logins:
         await update.effective_message.reply_text("Ст🔥ит  указ🔥ть  ник")
         return
@@ -415,8 +414,8 @@ async def _pos(update: Update, context: ContextTypes.DEFAULT_TYPE, short: bool) 
     f_scores = []
     for s in scores:
         s_l = s['user']['login'].lower()
-        for l in cups_logins:
-            if l in s_l:
+        for login in cups_logins:
+            if login in s_l:
                 f_scores.append(s)
     scores = f_scores
 
@@ -529,7 +528,7 @@ async def _task_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 set_task = PrefixHandler(cmd.PREFIXES, cmd.TASK, _task)
-choose_task = CallbackQueryHandler(_task_button, pattern="^task (\d+)$")
+choose_task = CallbackQueryHandler(_task_button, pattern=r"^task (\d+)$")
 
 
 @private_chat_only
@@ -630,9 +629,9 @@ async def _game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     replay_url = "https://cups.online" + task_battle['visualizer_url'] + "?"
     for _ in range(10):
-        replay_url += f"&player-names=" + urllib.parse.quote(names.get_name())
+        replay_url += "&player-names=" + urllib.parse.quote(names.get_name())
     #     replay_url += f"&client-ids=" + urllib.parse.quote(str(br['solution']['external_id']))
-    replay_url += f"&replay=%2Fapi_v2%2Fbattles%2F{context.args[0]}%2Fget_result_file%2F"
+    replay_url += f"&replay=%2Fapi_v2%2Fbattles%2F{cups_login}%2Fget_result_file%2F"
     reply_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton(text='Watch Replay', url=replay_url)]
     ])
@@ -646,8 +645,11 @@ async def _plot_logins(cups_logins,
                        update: Update,
                        context: ContextTypes.DEFAULT_TYPE,
                        relative_login=None,
+                       relative_rank=None,
+                       display_rank=False,
                        plot_type='step') -> None:
     task = allcups.task(context.chat_data['task_id'])
+    display_field = 'rank' if display_rank else 'score'
 
     # context.bot_data.pop('history', None)
     history = context.bot_data.get('history', {})
@@ -668,6 +670,8 @@ async def _plot_logins(cups_logins,
         task_history.pop()
         ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc)
 
+    time_limit = timedelta(days=2)
+    # ts = max(now - time_limit, ts)
     ts += time_step
     while ts <= end:
         scores = allcups.task_leaderboard(context.chat_data['task_id'], ts)
@@ -686,26 +690,25 @@ async def _plot_logins(cups_logins,
     myFmt = mdates.DateFormatter('%b %d %H:%M')
     ax.xaxis.set_major_formatter(myFmt)
     ax.grid(alpha=.9)
-    time_limit = timedelta(days=2)
+
+    task_history = [h for h in task_history if now - datetime.fromtimestamp(h['ts'], timezone.utc) < time_limit]
+    dates = [datetime.fromtimestamp(h['ts'], timezone.utc) for h in task_history]
+
     plot_data = {}
     ls = set(cups_logins)
     if relative_login is not None:
         ls.add(relative_login)
+
     for login in ls:
         pd = []
         plot_data[login] = pd
-        dates = []
         for h in task_history:
-            d = datetime.fromtimestamp(h['ts'], timezone.utc)
-            if now - d > time_limit:
-                continue
             point = None
             for s in h['leaderboard']:
                 if s['login'].lower() == login.lower():
-                    point = s['score']
+                    point = s[display_field]
                     break
             pd.append(point)
-            dates.append(d)
 
     if relative_login is not None and relative_login in plot_data:
         relative_data = list(plot_data[relative_login])
@@ -718,6 +721,21 @@ async def _plot_logins(cups_logins,
                     login_data[i] -= rel_d
 
         plt.axhline(y=0.0, color='darkviolet', linestyle='--', label=relative_login)
+
+    if relative_rank is not None:
+        relative_data = [
+            h['leaderboard'][relative_rank - 1][display_field] if relative_rank <= len(h['leaderboard']) else None
+            for h in task_history
+        ]
+        for login in cups_logins:
+            login_data = plot_data[login]
+            for i, rel_d in enumerate(relative_data):
+                if login_data[i] is None or rel_d is None:
+                    login_data[i] = None
+                else:
+                    login_data[i] -= rel_d
+
+        plt.axhline(y=0.0, color='darkviolet', linestyle='--', label=f'rank={relative_rank}')
 
     for login in cups_logins:
         if relative_login is not None and login.lower() == relative_login.lower():
@@ -759,12 +777,22 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='s
         '-r', '--relative', type=str, required=False,
         help='CUPS логин, относительно которого строить график'
     )
+    parser.add_argument(
+        '-rr', '--relative-rank', type=int, required=False,
+        help='Место, относительно которого строить график'
+    )
+    parser.add_argument(
+        '-dr', '--display-rank', action='store_true',
+        help='График мест'
+    )
     parser.add_argument("cups_logins", type=str, nargs="+",
                         help='CUPS логины для отрисовки на графике')
 
     args = shlex.split(update.effective_message.text)[1:]
     try:
         args = parser.parse_args(args)
+        if args.relative is not None and args.relative_rank is not None:
+            parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
         help = help[help.find("[-h]") + 5:]
@@ -774,7 +802,7 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='s
         return
 
     await _plot_logins(args.cups_logins, update, context, plot_type=plot_type,
-                       relative_login=args.relative)
+                       relative_login=args.relative, relative_rank=args.relative_rank, display_rank=args.display_rank)
 
 
 plot = PrefixHandler(cmd.PREFIXES, cmd.PLOT, _plot)
@@ -800,6 +828,14 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
         '-r', '--relative', type=str, required=False,
         help='CUPS логин, относительно которого строить график'
     )
+    parser.add_argument(
+        '-rr', '--relative-rank', type=int, required=False,
+        help='Место, относительно которого строить график'
+    )
+    parser.add_argument(
+        '-dr', '--display-rank', action='store_true',
+        help='График мест'
+    )
 
     def positive_int(value):
         ivalue = int(value)
@@ -813,6 +849,8 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
     args = shlex.split(update.effective_message.text)[1:]
     try:
         args = parser.parse_args(args)
+        if args.relative is not None and args.relative_rank is not None:
+            parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
         help = help[help.find("[-h]") + 5:]
@@ -821,11 +859,11 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
         await update.effective_message.reply_markdown(msg)
         return
 
-    task = allcups.task(context.chat_data['task_id'])
     scores = allcups.task_leaderboard(context.chat_data['task_id'])[:args.N]
     logins = [s['user']['login'] for s in scores]
 
-    await _plot_logins(logins, update, context, plot_type=plot_type, relative_login=args.relative)
+    await _plot_logins(logins, update, context, plot_type=plot_type,
+                       relative_login=args.relative, relative_rank=args.relative_rank, display_rank=args.display_rank)
 
 
 plot_top = PrefixHandler(cmd.PREFIXES, cmd.PLOT_TOP, _plot_top)
