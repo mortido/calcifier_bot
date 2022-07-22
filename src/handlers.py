@@ -728,7 +728,7 @@ async def _plot_logins(cups_logins,
             plt.step(dates, plot_data[login], where='mid', label=login)
 
     plt.grid(color='0.95')
-    plt.legend(fontsize=16, loc='lower left')
+    plt.legend(fontsize=16, bbox_to_anchor=(1, 1), loc="upper left")
 
     plot_file = BytesIO()
     fig.tight_layout()
