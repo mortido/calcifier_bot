@@ -383,10 +383,6 @@ async def _plot_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_ty
         await update.effective_message.reply_markdown(msg)
         return
 
-    task = allcups.task(context.chat_data['task_id'])
-    scores = allcups.task_leaderboard(context.chat_data['task_id'])[:args.N]
-    logins = [s['user']['login'] for s in scores]
-
     await _plot_logins(cups_logins, update, context, plot_type=plot_type,
                        relative_login=args.relative)
 
