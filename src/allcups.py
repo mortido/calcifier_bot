@@ -120,7 +120,7 @@ def task_leaderboard(task_id, date=None):
     else:
         date -= timedelta(days=1)
     params = {
-        "page_size": 100500,
+        "page_size": 1000,
         "date": date.isoformat()
     }
     return _get_all_pages(url, params=params)

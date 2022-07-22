@@ -66,7 +66,11 @@ async def _process_battle_results(battle, name, lb_scores,
                 await context.bot.send_message(chat_id=chat_id,
                                                text=msg_txt,
                                                parse_mode='markdown',
-                                               reply_markup=reply_markup)
+                                               reply_markup=reply_markup,
+                                               read_timeout=5,
+                                               write_timeout=5,
+                                               connect_timeout=5,
+                                               pool_timeout=5)
             except Forbidden as e:
                 logger.warning(f"Bot blocked by '{chat_id}' - removing subscription.")
                 blocked.append(chat_id)

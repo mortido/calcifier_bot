@@ -4,6 +4,8 @@ GAME = ["game", "игра", "пфьу"]
 GAMES = ["games", "игры", "пфьуы"]
 PLOT = ["plot", "здще"]
 PLOTL = ["plotl", "здщед"]
+PLOT_CHAT = ["plot_chat", "здще_срфе"]
+PLOTL_CHAT = ["plot_chat", "здще_срфе"]
 PLOT_TOP = ["plot_top", "здще_ещз"]
 PLOTL_TOP = ["plotl_top", "здщед_ещз"]
 
