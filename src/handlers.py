@@ -658,7 +658,7 @@ async def _plot_logins(cups_logins,
     ts = datetime.fromisoformat(task['start_date'])
     finish_date = datetime.fromisoformat(task['finish_date'])
     time_step = timedelta(minutes=15)
-    now = datetime.now(timezone.utc) + time_step
+    now = datetime.now(timezone.utc)
     end = min(finish_date, now)
     if task_history:
         ts = datetime.fromtimestamp(task_history[-1]['ts'], timezone.utc)
