@@ -870,5 +870,4 @@ games = PrefixHandler(cmd.PREFIXES, cmd.GAMES, _games)
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.warning('Error: "%s" update: %s' % (context.error, update))
     if update:
-        await update.effective_message.reply_text(
-            "Во мне что-то сл🔥малось.")
+        await update.effective_message.reply_text(f"Во мне что-то сл🔥малось: {context.error}")
