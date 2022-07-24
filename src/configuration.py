@@ -2,7 +2,7 @@ import json
 import os
 from collections import namedtuple
 
-CalciferConfig = namedtuple('CalciferConfig', ('tg_token', 'bot_admins', 'persistent_file', 'horse_chat'))
+CalciferConfig = namedtuple('CalciferConfig', ('tg_token', 'bot_admins', 'persistent_file'))
 
 
 def from_json_file(filename):

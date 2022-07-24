@@ -26,7 +26,7 @@ def trim_len(string, max_len):
 #     return "\n".join(rows)
 
 
-def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat=False):
+def format_top(chart_name, scores, horse_logins=None, header=True):
     if horse_logins is None:
         horse_logins = set()
     rows = ["```"]
@@ -37,20 +37,12 @@ def format_top(chart_name, scores, horse_logins=None, header=True, is_horse_chat
         rows.append("--------------------")
     for score in scores:
         login = trim_len(score['user']['login'], 10)
-        if not is_horse_chat and score['user']['login'] in horse_logins and len(login) > 3:
-            l1 = random.randint(1, len(login) - 1)
-            l2 = random.randint(1, len(login)  - 1)
-            while l1 == l2:
-                l2 = random.randint(1, len(login) - 1)
-            if l1 > l2:
-                l1, l2 = l2, l1
-            login = login[:l1] + login[l2] + login[l1+1:l2] + login[l1] + login[l2+1:]
         rows.append("{}{}{}".format(
             str(score['rank']).ljust(4),
             login.ljust(11),
             "{:.3f}".format(score['score']).rjust(5)
         ))
-        if is_horse_chat and score['user']['login'] in horse_logins:
+        if score['user']['login'] in horse_logins:
             rows[-1] += " 🐴"
     rows.append("```")
     return "\n".join(rows)
@@ -151,18 +143,6 @@ def format_chat_info(contest=None, task=None) -> str:
 
 import random
 
-win_commandos_phrases = [
-    "Уделал Commandos'a!",
-    "Commandos негодует",
-    "Отомстил Commandos'у за mortido",
-    "Commandos разбит!",
-]
-
-loose_with_commandos_phrases = [
-    "Зато Commandos сыграл еще хуже",
-    "Ну хоть не как Commandos",
-]
-
 win_phrases = [
     "Ты на правильном пути",
     "Ты идешь хорошо",
@@ -191,8 +171,6 @@ win_phrases = [
     "Жги, грабь, доминируй!",
     "Держи `1u + pos.x + width_ * (1u + pos.y)` - это кусок кода mortido, он приносит segfault'ы",
     "А ты любишь лошадей?",
-    "Лошади - офигенная темма.",
-    "🐴❤️?",
     "Игого!",
     "Ты заслужил чашечку чая",
 ]
@@ -240,6 +218,7 @@ loose_phrases = [
     "Нафиг эти сложности, просто напиши несколько if'ов",
     "Кем бы ты ни был, кем бы ты не стал, помни, где ты был и кем ты стал.",
     "Делай как надо, как не надо не делай.",
+    "Держи [ссылку](https://github.com/core2duo/RHC-AI)"
 ]
 
 
@@ -306,10 +285,5 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
         ))
     rows.append("```")
 
-    if my_login != 'Commandos' and 'Commandos' in all_logins \
-            and all_logins[my_login] > all_logins['Commandos']:
-        rows.append(random.choice(win_commandos_phrases) if win_flag else random.choice(
-            loose_with_commandos_phrases))
-    else:
-        rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
+    rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
     return "\n".join(rows)
