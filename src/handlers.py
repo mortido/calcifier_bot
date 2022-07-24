@@ -544,7 +544,7 @@ async def _sub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if login:
         battle_subs = context.bot_data.get('battle_subs', dict())
         context.bot_data['battle_subs'] = battle_subs
-        chats = battle_subs.get('battle_subs', set())
+        chats = battle_subs.get(login, set())
         battle_subs[login] = chats
         chats.discard(update.effective_chat.id)
 
@@ -569,7 +569,7 @@ async def _unsub(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if login:
         battle_subs = context.bot_data.get('battle_subs', dict())
         context.bot_data['battle_subs'] = battle_subs
-        chats = battle_subs.get('battle_subs', set())
+        chats = battle_subs.get(login, set())
         battle_subs[login] = chats
         chats.discard(update.effective_chat.id)
     await update.effective_message.reply_text("Подписка на системные игры отключена")
