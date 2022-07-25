@@ -60,7 +60,7 @@ def main():
         logger.info(f"Bot admins: {', '.join(config.bot_admins)}")
         c.bot_data['bot_admins'] = config.bot_admins
     job_queue.run_once(set_bot_admins, 5)
-    # job_queue.run_repeating(jobs.games_notifications, interval=3*60, first=5)
+    job_queue.run_repeating(jobs.games_notifications, interval=3*60, first=5)
 
     application.add_error_handler(handlers.error_handler)
     application.add_handler(handlers.start)
