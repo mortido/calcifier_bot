@@ -95,7 +95,7 @@ def battles(task_id=None, max_count=1000, search=None):  # , last_battle_id=None
         # if 'results' not in json_response:
         #     return []
         results = json_response['results']
-        while json_response['next'] and len(results) < max_count:
+        while 'next' in json_response and json_response['next'] and len(results) < max_count:
             response = requests.get(json_response['next'], timeout=10)
             json_response = response.json()
             results = results + json_response['results']
