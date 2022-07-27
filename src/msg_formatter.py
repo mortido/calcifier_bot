@@ -175,7 +175,12 @@ win_phrases = [
     "Ты заслужил чашечку чая",
 ]
 
-loose_phrases = [
+win_using_rust_phrases = [
+    *win_phrases,
+    "🦀",
+]
+
+loose_using_rust_phrases = [
     "Бывает и хуже",
     "Слезами горю не поможешь",
     "На этой игре свет клином не сошелся",
@@ -202,7 +207,6 @@ loose_phrases = [
     "Каждое поражение делает тебя сильнее.",
     "Кажется, нужна ещё пара ифов...",
     "Хм... посмотришь, почему так вышло?",
-    "Попробуй сменить язык",
     "Лучше быть последним — первым, чем первым — последним",
     "Легко вставать, когда ты не ложился.",
     "Иногда жизнь — это жизнь, а ты в ней иногда.",
@@ -221,6 +225,10 @@ loose_phrases = [
     "Держи [ссылку](https://github.com/core2duo/RHC-AI)"
 ]
 
+loose_phrases = [
+    *loose_using_rust_phrases,
+    "Попробуй сменить язык",
+]
 
 def format_battles(name, cups_login, battles):
     cups_login = cups_login.lower()
@@ -271,11 +279,13 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
     ]
 
     my_login = ""
+    my_lang = ""
     all_logins = {}
     for s in scores:
         login = "* " + s['login'] if s['sub_flag'] else s['login']
         if s['sub_flag']:
             my_login = s['login']
+            my_lang = s['language']
         all_logins[s['login']] = max(all_logins.get(s['login'], 0), s['score'])
         rows.append("[{}] {}{}{}".format(
             str(s['lb_rank']).rjust(3),
@@ -285,5 +295,8 @@ def format_game(battle, name, scores, my_lb, win_flag, solution):
         ))
     rows.append("```")
 
-    rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
+    if my_lang.startswith('Rust'):
+        rows.append(random.choice(win_using_rust_phrases) if win_flag else random.choice(loose_using_rust_phrases))
+    else:
+        rows.append(random.choice(win_phrases) if win_flag else random.choice(loose_phrases))
     return "\n".join(rows)
