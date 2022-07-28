@@ -366,7 +366,7 @@ async def _plot_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_ty
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
     parser.add_argument(
         '-r', '--relative', type=str, required=False,
         help='CUPS логин, относительно которого строить график'
@@ -376,7 +376,7 @@ async def _plot_chat(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_ty
         args = parser.parse_args(args)
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
-        help = help[help.find("[-h]") + 5:]
+        help = help[help.find(".py") + 4:]
         msg = f"```\nUsage: {help}\n\n{e.message}\n```"
         logger.warning(msg)
         await update.effective_message.reply_markdown(msg)
@@ -770,7 +770,7 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='s
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
     parser.add_argument(
         '-r', '--relative', type=str, required=False,
         help='CUPS логин, относительно которого строить график'
@@ -793,7 +793,7 @@ async def _plot(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_type='s
             parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
-        help = help[help.find("[-h]") + 5:]
+        help = help[help.find(".py") + 4:]
         msg = f"```\nUsage: {help}\n\n{e.message}\n```"
         logger.warning(msg)
         await update.effective_message.reply_markdown(msg)
@@ -821,7 +821,7 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_help=False)
     parser.add_argument(
         '-r', '--relative', type=str, required=False,
         help='CUPS логин, относительно которого строить график'
@@ -851,7 +851,7 @@ async def _plot_top(update: Update, context: ContextTypes.DEFAULT_TYPE, plot_typ
             parser.error('Use one of -r and -rr options')
     except argparse.ArgumentError as e:
         help = parser.format_help().split("\n")[0]
-        help = help[help.find("[-h]") + 5:]
+        help = help[help.find(".py") + 4:]
         msg = f"```\nUsage: {help}\n\n{e.message}\n```"
         logger.warning(msg)
         await update.effective_message.reply_markdown(msg)
