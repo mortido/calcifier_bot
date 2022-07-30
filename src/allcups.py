@@ -75,8 +75,10 @@ def battles_bot(task_id, since=None):
     url = ALLCUPS_API_URL
     url += f"battles/task/{task_id}/bot/"
     params = {}
+    since = since + timedelta(hours=3)
     if since is not None:
-        params["since"] = since.isoformat().replace("+00:00", ".000Z")
+        # params["since"] = since.isoformat().replace("+00:00", "Z")
+        params["since"] = since.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
     response = requests.get(url, params=params, timeout=10)
     json_response = response.json()
     return json_response['battles']

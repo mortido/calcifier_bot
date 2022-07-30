@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import urllib.parse
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -114,11 +114,15 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 name = f"{b['name']}: {r['name']}: {t['name']}"
                 last_ts = last_battle_ts.get(t['id'], None)
                 last = datetime.fromtimestamp(last_ts, timezone.utc) if last_ts else None
+
+                if last is not None:
+                    now = datetime.now(timezone.utc)
+                    last = max(last, now - timedelta(minutes=30))
                 # sent_ids = sent_battle_ids.get(t['id'], set())
                 # battle_update = battle_updates.get(t['id'], None)
                 # task_battles = allcups.battles_bot(t['id'], since=last)
-                task_battles = allcups.battles_bot(t['id'])
-                # task_battles = allcups.battles_bot(t['id'], since=last)
+                # task_battles = allcups.battles_bot(t['id'])
+                task_battles = allcups.battles_bot(t['id'], since=last)
                 if not task_battles:
                     continue
 
@@ -151,7 +155,7 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
 
                 # sent_battle_ids[t['id']] = set(sorted(sent_ids, reverse=True)[:5000])
 
-    context.bot_data['last_battle_ts'] = last_battle_ts
+    # context.bot_data['last_battle_ts'] = last_battle_ts
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context
