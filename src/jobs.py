@@ -118,9 +118,13 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                 # battle_update = battle_updates.get(t['id'], None)
                 # task_battles = allcups.battles_bot(t['id'], since=last)
                 task_battles = allcups.battles_bot(t['id'])
+                # task_battles = allcups.battles_bot(t['id'], since=last)
                 if not task_battles:
                     continue
 
+                task_battles = sorted(task_battles,
+                                      key=lambda x:datetime.fromisoformat(x['updated_at']),
+                                      reverse=True)
                 ts = datetime.fromisoformat(task_battles[0]['updated_at']).timestamp()
                 last_battle_ts[t['id']] = ts
 
@@ -146,6 +150,8 @@ async def games_notifications(context: ContextTypes.DEFAULT_TYPE) -> None:
                     # sent_ids.add(battle['id'])
 
                 # sent_battle_ids[t['id']] = set(sorted(sent_ids, reverse=True)[:5000])
+
+    context.bot_data['last_battle_ts'] = last_battle_ts
 
 # def notify_about_new_games(context: CallbackContext):
 #     chart = context.job.context
